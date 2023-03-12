@@ -4,7 +4,7 @@ FROM node:lts-alpine AS builder
 COPY ./ /app
 WORKDIR /app
 
-RUN npm install yarn -g && yarn && yarn build:prod
+RUN yarn && yarn build:prod
 
 # service
 FROM node:lts-alpine
@@ -13,7 +13,7 @@ COPY /services /app
 COPY --from=builder /app/dist /app/public
 
 WORKDIR /app
-RUN npm install yarn -g && yarn install
+RUN yarn install
 
 EXPOSE 7001
 
