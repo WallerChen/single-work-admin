@@ -17,6 +17,7 @@
     "@baiducloud/sdk": "^1.0.0-rc.38",
     "axios": "0.18.1",
     "core-js": "^3.28.0",
+    "debug": "^4.3.4",
     "element-ui": "2.13.2",
     "js-cookie": "2.2.0",
     "normalize.css": "7.0.0",

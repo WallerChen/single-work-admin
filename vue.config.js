@@ -39,7 +39,7 @@ module.exports = {
       proxy: {
         "/single": {
             // 代理名称   凡是使用/api开头的地址都是用此代理
-            target: "http://0.0.0.0:80/", // 需要代理访问的api地址
+            target: "https://koa-rkk6-17832-5-1312859283.sh.run.tcloudbase.com/", // 需要代理访问的api地址
             changeOrigin: true, // 允许跨域请求
             //ws: true,        //如果要代理 websockets，配置这个参数
             secure: false,  // 如果是https接口，需要配置这个参数
