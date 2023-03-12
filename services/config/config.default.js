@@ -5,6 +5,9 @@
 /**
  * @param {Egg.EggAppInfo} appInfo app info
  */
+
+const path = require('path');
+
 module.exports = appInfo => {
   /**
    * built-in config
@@ -13,18 +16,15 @@ module.exports = appInfo => {
   const config = exports = {
     cluster: {
       listen: {
-        path: '',
         port: 7001,
         hostname: '0.0.0.0',
     }
   },
     static: {
-      prefix: '/static', 
+      prefix: '/', 
       dir: path.join(appInfo.baseDir, 'app/public'), // `String` or `Array:[dir1, dir2, ...]` 静态化目录,可以设置多个静态化目录
       dynamic: true, // 如果当前访问的静态资源没有缓存，则缓存静态文件，和`preload`配合使用；
       preload: false,
-      maxAge: 31536000, // in prod env, 0 in other envs
-      buffer: true, // in prod env, false in other envs
     },
     cors: {
       origin: '*',

@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 // 代理域名配置
-const path = 'single';
+const path = process.env.NODE_ENV  === 'development' ?  'single' : '';
 
 // 获取活动列表
 export function getAct(params) {
