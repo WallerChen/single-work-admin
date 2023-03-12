@@ -11,12 +11,13 @@ module.exports = appInfo => {
    * @type {Egg.EggAppConfig}
    **/
   const config = exports = {
-    cluster = {
+    cluster: {
       listen: {
         path: '',
         port: 7001,
         hostname: '0.0.0.0',
-    },
+    }
+  },
     static: {
       prefix: '/static', 
       dir: path.join(appInfo.baseDir, 'app/public'), // `String` or `Array:[dir1, dir2, ...]` 静态化目录,可以设置多个静态化目录
@@ -28,8 +29,8 @@ module.exports = appInfo => {
     cors: {
       origin: '*',
       allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH'
-    }
-  };
+    },
+  }
   // use for cookie sign key, should change to your own and keep security
   config.keys = appInfo.name + '_1676268731604_5355';
 
