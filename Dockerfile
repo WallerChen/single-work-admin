@@ -4,7 +4,7 @@ FROM node:lts-alpine AS builder
 COPY ./ /app
 WORKDIR /app
 
-RUN npm install yarn -g && yarn && yarn build
+RUN npm install yarn -g && yarn && yarn build:prod
 
 # service
 FROM node:lts-alpine
