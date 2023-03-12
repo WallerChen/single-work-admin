@@ -11,8 +11,9 @@ RUN yarn && yarn build:prod
 FROM node:16-alpine
 
 COPY /services /app
-COPY --from=builder /app/dist /app/public
+COPY --from=builder /app/dist /app/app/public
 
+WORKDIR /app
 RUN yarn
 
 EXPOSE 7001
