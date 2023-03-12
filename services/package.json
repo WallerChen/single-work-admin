@@ -25,7 +25,7 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "start": "egg-scripts start --title=egg-server-single-service",
+    "start": "egg-scripts start --workers=2 --title=egg-server-single-service",
     "build": "egg-bin dev",
     "stop": "egg-scripts stop --title=egg-server-single-service",
     "dev": "egg-bin dev",
