@@ -41,7 +41,7 @@
               type="textarea"
               :rows="5"
               placeholder="请输入内容"
-              :value="scope.row.desc">
+              v-model="scope.row.desc">
             </el-input>
           </div>
           
