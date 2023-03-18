@@ -4,11 +4,10 @@
       <el-upload
         class="avatar-uploader"
         drag
-        action="https://jsonplaceholder.typicode.com/posts/"
+        action=""
         :show-file-list="false"
         :before-upload="uploadFile">
         <img v-if="imageUrl" :src="imageUrl" class="avatar">
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
       </el-upload>
       <!-- <el-input placeholder="活动图片" size="mini" class="search"/> -->
       <!-- <el-input placeholder="请输入昵称" size="mini" v-model="searchWord" class="search">
@@ -36,6 +35,9 @@
         prop="images"
         label="活动图片"
         width="180">
+        <template slot-scope="scope">
+          <img :src="scope.row.images" class="activity-image" mode="aspectFill" />
+        </template>
       </el-table-column>
       <el-table-column
         prop="content"
@@ -133,7 +135,8 @@ export default {
         title: this.activityTitle,
         content: this.activityDesc,
         price: this.activityPrice,
-        organizer: this.activityOrganizer
+        organizer: this.activityOrganizer,
+        images: this.imageUrl
       };
       createAct(params).then(res=> {
         this.getAct();
@@ -148,12 +151,15 @@ export default {
     uploadFile(file) {
       console.log('------333');
       console.log('fiel:' + file);
+      let date = new Date();
+      let dateTimeStr = date.getTime();
+      let fileName = dateTimeStr + '-' + file.name;
       let reader = new FileReader();
       reader.readAsArrayBuffer(file);
       reader.onload = e => {
-        client.putObject("name" , file.name, new Buffer(e.target.result)).then(res=> {
+        client.putObject("normal-wr" , fileName, new Buffer(e.target.result)).then(res=> {
           // this.img = 
-          console.log('res:' + JSON.stringify(res));
+          this.imageUrl = 'https://normal-wr.bj.bcebos.com/' + fileName;
         });
       }
     }
@@ -183,8 +189,8 @@ export default {
 }
 
 .activity-image {
-  margin-left: 30px;
-  width: 400px;
+  height: 150px;
+  width: 150px;
 }
 
 .desc-show {
@@ -211,7 +217,7 @@ export default {
     text-align: center;
   }
   .avatar {
-    width: 178px;
+    width: 100%;
     height: 178px;
     display: block;
   }

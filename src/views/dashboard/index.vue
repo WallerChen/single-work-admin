@@ -35,13 +35,16 @@
         sortable
         width="250">
         <template slot-scope="scope">
-          <div class="desc-show">{{scope.row.desc}}</div>
-          <!-- <el-input
-            type="textarea"
-            :rows="5"
-            placeholder="请输入内容"
-            v-model="scope.row.desc">
-          </el-input> -->
+          <div v-if="!scope.row.edit" class="desc-show">{{scope.row.desc}}</div>
+          <div v-else>
+              <el-input
+              type="textarea"
+              :rows="5"
+              placeholder="请输入内容"
+              :value="scope.row.desc">
+            </el-input>
+          </div>
+          
         </template>
       </el-table-column>
       <el-table-column
@@ -89,10 +92,6 @@
         <el-button
           size="mini"
           @click="handleEdit(scope.$index, scope.row)">{{ scope.row.edit ? '完成' : '编辑' }} </el-button>
-        <!-- <el-button
-          size="mini"
-          type="danger"
-          @click="handleDelete(scope.$index, scope.row)">实战</el-button> -->
       </template>
     </el-table-column>
     </el-table>
@@ -133,6 +132,9 @@ export default {
       'name'
     ])
   },
+  created() {
+    this.getInfoByClass('one');
+  },
   methods: {
     // userDesc(value, id) {
     //   updateUserInfo(id, {desc: value}).then(res=>{
@@ -152,30 +154,29 @@ export default {
       });
     },
     // 编辑用户信息
-    // handleEdit(index, row) {
-    //   if(this.isEdit && !row.edit) {
-    //     Message({
-    //       message: '一次性只能编辑一个用户',
-    //       type: 'error',
-    //       duration: 3 * 1000
-    //     })
-    //     return;
-    //   }
-    //   this.updateObj = row;
-    //   if(row.edit) { 
-    //     const {desc, score} = this.updateObj;
-    //     row.edit = false;
-    //     updateUserInfo(row.id, {desc, score}).then(res=>{
-    //       this.isEdit = false;
-    //       this.$set(this.tableData, index - 1, {row, ...this.updateObj});
-    //       // console.log('resres:' + JSON.stringify(res));
-    //     });
-    //     return;
-    //   }
-    //   row.edit = true;
-    //   this.isEdit = true;
-    //   this.$set(this.tableData, index - 1, row);
-    // },
+    handleEdit(index, row) {
+      if(this.isEdit && !row.edit) {
+        Message({
+          message: '一次性只能编辑一个用户',
+          type: 'error',
+          duration: 3 * 1000
+        })
+        return;
+      }
+      this.updateObj = row;
+      if(this.isEdit) { 
+        const {desc} = this.updateObj;
+        updateUserInfo(row.id, {desc}).then(res=>{
+          console.log('resres:' + JSON.stringify(res));
+        });
+        this.isEdit = false;
+        this.$set(this.tableData, index, {...row, ...this.updateObj, edit: false});
+      } else {
+      row.edit = true;
+      this.isEdit = true;
+      this.$set(this.tableData, index, row);
+    }
+    },
     getInfoByClass(cls) {
       getList({cls}).then(res => {
         this.tableData = res.rows;
