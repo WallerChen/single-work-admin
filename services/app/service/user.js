@@ -40,7 +40,7 @@ class User extends Service {
       },
       // offset,
       // limit,
-      order: [[ 'score', 'desc' ] ,[ 'created_at', 'desc' ], [ 'id', 'desc' ]],
+      order: [[ 'rank', 'desc' ], [ 'score', 'desc' ] ,[ 'created_at', 'desc' ], [ 'id', 'desc' ]],
     });
   }
   // 模糊匹配用户昵称

@@ -25,6 +25,8 @@ module.exports = app => {
     is_show: INTEGER,
     // 质量得分
     score: INTEGER,
+    // 固定排序
+    rank: INTEGER
   });
   (async () => {
     await User.sync({ alter: true });

@@ -13,7 +13,6 @@ class ActivityController extends Controller {
     const query = {
       order: [[ 'created_at', 'desc' ], [ 'id', 'desc' ]],
     };
-    console.log('query:' + JSON.stringify(query));
     ctx.body = await ctx.model.Activity.findAndCountAll(query);
   }
 
