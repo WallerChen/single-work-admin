@@ -48,8 +48,8 @@ class UserController extends Controller {
       return;
     }
 
-    const { score, desc, is_show } = ctx.request.body;
-    await user.update({ score, desc, is_show });
+    const { score, desc, is_show, rank} = ctx.request.body;
+    await user.update({ score, desc, is_show, rank });
     ctx.body = user;
   }
 

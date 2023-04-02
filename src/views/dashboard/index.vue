@@ -64,6 +64,21 @@
         </template>
       </el-table-column>
       <el-table-column
+        prop="desc"
+        label="强制排序"
+        sortable
+        width="100">
+        <template slot-scope="scope">
+          <div v-if="!scope.row.edit" class="desc-show">{{scope.row.rank}}</div>
+          <div v-else>
+              <el-input
+              placeholder="请输入排序"
+              v-model="scope.row.rank">
+            </el-input>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="is_show"
         label="是否展示"
         sortable
@@ -165,8 +180,8 @@ export default {
       }
       this.updateObj = row;
       if(this.isEdit) { 
-        const {desc} = this.updateObj;
-        updateUserInfo(row.id, {desc}).then(res=>{
+        const {desc, rank} = this.updateObj;
+        updateUserInfo(row.id, {desc, rank}).then(res=>{
           console.log('resres:' + JSON.stringify(res));
         });
         this.isEdit = false;
