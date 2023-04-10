@@ -12,6 +12,8 @@ class StudentInfo extends Service {
   //
   async getStudentInfo({ offset = 0, limit = 10, status = null }) {
 
+    offset = Number(offset);
+    limit = Number(limit);
 
     let whereClause = {};
     if (status !== null && status !== '') {

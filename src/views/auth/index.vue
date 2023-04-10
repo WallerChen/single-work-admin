@@ -14,7 +14,7 @@
       <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
     </div>
 
-    <el-table :data="tableData" border header-align="center" align="center">
+    <el-table v-loading="listLoading" :data="tableData" border header-align="center" align="center">
       <el-table-column prop="id" label="id" width="100" />
       <el-table-column prop="sex" label="性别" width="100" />
       <el-table-column prop="realName" label="真实姓名" width="120" />
@@ -85,12 +85,21 @@
       </el-table-column>
       <el-table-column prop="updateTime" label="更新时间" width="200" />
     </el-table>
+
+    <pagination
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      :auto-scroll="false"
+      @pagination="fetchData"
+    />
   </div>
 </template>
 
 <script>
 
 import { getStudentInfo, verifyInfo } from '@/api/infoVerify'
+import Pagination from '@/components/Pagination'
 
 const UNCHECKED = 0
 const PASS = 1
@@ -99,16 +108,25 @@ const REJECT = 2
 const BOS_ADDR = 'https://single-student.bj.bcebos.com/'
 export default {
   name: 'AuthIdCard',
+  components: {
+    Pagination
+  },
   data() {
     return {
       UNCHECKED,
       PASS,
       REJECT,
 
+      listLoading: false,
       searchStatus: '',
-      searchIdcard: '',
 
-      tableData: []
+      tableData: [],
+
+      total: 0,
+      listQuery: {
+        page: 1,
+        limit: 5
+      }
     }
   },
   async created() {
@@ -116,9 +134,17 @@ export default {
   },
   methods: {
 
-    async fetchData(query) {
+    async fetchData() {
+      this.listLoading = true
+
+      const query = {
+        limit: this.listQuery.limit,
+        offset: (this.listQuery.page - 1) * this.listQuery.limit,
+        status: this.searchStatus
+      }
       const res = await getStudentInfo(query)
       console.log('res.count', res.count, res)
+      this.total = res.count
 
       this.tableData = []
 
@@ -147,6 +173,7 @@ export default {
           updateTime: item.updatedAt
         })
       }
+      this.listLoading = false
     },
     async handleVerify(index, type, status) {
       // row.id
@@ -165,10 +192,7 @@ export default {
       }
     },
     handleSearch() {
-      console.log('search')
-      this.fetchData({
-        status: this.searchStatus
-      })
+      this.fetchData()
     }
   }
 }
