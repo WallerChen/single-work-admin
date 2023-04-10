@@ -8,11 +8,13 @@ type AnyFunc<T = any> = (...args: any[]) => T;
 type CanExportFunc = AnyFunc<Promise<any>> | AnyFunc<IterableIterator<any>>;
 type AutoInstanceType<T, U = T extends CanExportFunc ? T : T extends AnyFunc ? ReturnType<T> : T> = U extends AnyClass ? InstanceType<U> : U;
 import ExportActivity = require('../../../app/service/activity');
+import ExportStudentInfo = require('../../../app/service/student_info');
 import ExportUser = require('../../../app/service/user');
 
 declare module 'egg' {
   interface IService {
     activity: AutoInstanceType<typeof ExportActivity>;
+    studentInfo: AutoInstanceType<typeof ExportStudentInfo>;
     user: AutoInstanceType<typeof ExportUser>;
   }
 }

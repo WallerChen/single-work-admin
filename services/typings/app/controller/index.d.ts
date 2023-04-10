@@ -6,6 +6,7 @@ import 'egg';
 import ExportActivity = require('../../../app/controller/activity');
 import ExportCron = require('../../../app/controller/cron');
 import ExportHome = require('../../../app/controller/home');
+import ExportStudentInfo = require('../../../app/controller/student_info');
 import ExportUser = require('../../../app/controller/user');
 
 declare module 'egg' {
@@ -13,6 +14,7 @@ declare module 'egg' {
     activity: ExportActivity;
     cron: ExportCron;
     home: ExportHome;
+    studentInfo: ExportStudentInfo;
     user: ExportUser;
   }
 }

@@ -20,6 +20,9 @@ module.exports = app => {
   router.get('admin/users', '/admin/users/fuzzySearch', controller.user.fuzzySearch);
   router.get('admin/users', '/admin/users/index', controller.user.index);
 
+  router.get('admin/auth/info', '/admin/auth/info', controller.studentInfo.getList);
+  router.post('admin/auth/verify', '/admin/auth/verify', controller.studentInfo.verify);
+
 
   router.resources('activity', '/activity', controller.activity);
 };

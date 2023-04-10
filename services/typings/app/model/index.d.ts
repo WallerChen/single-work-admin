@@ -4,11 +4,13 @@
 
 import 'egg';
 import ExportActivity = require('../../../app/model/activity');
+import ExportStudentInfo = require('../../../app/model/student_info');
 import ExportUser = require('../../../app/model/user');
 
 declare module 'egg' {
   interface IModel {
     Activity: ReturnType<typeof ExportActivity>;
+    StudentInfo: ReturnType<typeof ExportStudentInfo>;
     User: ReturnType<typeof ExportUser>;
   }
 }
