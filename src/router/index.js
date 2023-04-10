@@ -53,10 +53,7 @@ export const constantRoutes = [
       component: () => import('@/views/dashboard/index'),
       meta: { title: '班级', icon: 'dashboard' }
     }]
-  },
-
-
-  {
+  }, {
     path: '/activity',
     component: Layout,
     redirect: '/activity',
@@ -65,6 +62,17 @@ export const constantRoutes = [
       name: 'activity',
       component: () => import('@/views/activity/index'),
       meta: { title: '活动', icon: 'dashboard' }
+    }]
+  }, {
+    path: '/auth',
+    component: Layout,
+    redirect: '/auth',
+    // meta: { title: '信息认证', icon: 'dashboard' },
+    children: [{
+      path: '/auth',
+      name: 'AuthEducation',
+      component: () => import('@/views/auth/index'),
+      meta: { title: '信息认证', icon: 'dashboard' }
     }]
   },
 
