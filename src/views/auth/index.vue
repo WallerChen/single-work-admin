@@ -38,7 +38,14 @@
       <el-table-column label="学历照片">
         <template slot-scope="scope">
           <div class="img-list">
-            <img v-for="(item, index) in scope.row.educationImages" :key="index" :src="item">
+            <!-- <img v-for="(item, index) in scope.row.educationImages" :key="index" :src="item"> -->
+            <el-image
+              v-for="(item, index) in scope.row.educationImages"
+              :key="index"
+              class="image"
+              :src="item"
+              :preview-src-list="scope.row.educationImages"
+            />
           </div>
         </template>
       </el-table-column>
@@ -66,7 +73,14 @@
       <el-table-column label="工作照片">
         <template slot-scope="scope">
           <div class="img-list">
-            <img v-for="(item, index) in scope.row.jobImages" :key="index" :src="item">
+            <!-- <img v-for="(item, index) in scope.row.jobImages" :key="index" :src="item"> -->
+            <el-image
+              v-for="(item, index) in scope.row.jobImages"
+              :key="index"
+              class="image"
+              :src="item"
+              :preview-src-list="scope.row.jobImages"
+            />
           </div>
         </template>
       </el-table-column>
@@ -214,7 +228,7 @@ export default {
   justify-content: center;
   align-items: center;
 
-  img {
+  .image {
     display: block;
     border: 1px solid black;
     width: 6rem;

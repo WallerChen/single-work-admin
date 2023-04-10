@@ -72,7 +72,7 @@ export const constantRoutes = [
       path: '/auth',
       name: 'AuthEducation',
       component: () => import('@/views/auth/index'),
-      meta: { title: '信息认证', icon: 'dashboard' }
+      meta: { title: '信息认证', icon: 'el-icon-s-check' }
     }]
   },
 
