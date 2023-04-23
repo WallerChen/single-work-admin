@@ -6,9 +6,10 @@
 
       <el-select v-model="searchStatus" placeholder="请选择">
         <el-option label="全部" value="" />
-        <el-option label="任一未审核" :value="UNCHECKED" />
-        <el-option label="全部已通过" :value="PASS" />
+        <el-option label="任一未提交" :value="UNCHECKED" />
+        <el-option label="任一审核中" :value="CHECKING" />
         <el-option label="任一已驳回" :value="REJECT" />
+        <el-option label="全部已通过" :value="PASS" />
       </el-select>
 
       <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
@@ -52,9 +53,10 @@
 
       <el-table-column label="学历状态" width="100">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.educationAuthStatus === UNCHECKED" type="info">未审核</el-tag>
+          <el-tag v-if="scope.row.educationAuthStatus === CHECKING" type="info">审核中</el-tag>
           <el-tag v-else-if="scope.row.educationAuthStatus === PASS" type="success">已通过</el-tag>
-          <el-tag v-else type="danger">已驳回</el-tag>
+          <el-tag v-else-if="scope.row.educationAuthStatus === REJECT" type="danger">已驳回</el-tag>
+          <el-tag v-else type="info">未提交</el-tag>
 
           <div>
             <el-button
@@ -87,9 +89,10 @@
 
       <el-table-column label="工作状态" width="100">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.jobAuthStatus === UNCHECKED" type="info">未审核</el-tag>
+          <el-tag v-if="scope.row.jobAuthStatus === CHECKING" type="info">审核中</el-tag>
           <el-tag v-else-if="scope.row.jobAuthStatus === PASS" type="success">已通过</el-tag>
-          <el-tag v-else type="danger">已驳回</el-tag>
+          <el-tag v-else-if="scope.row.jobAuthStatus === REJECT" type="danger">已驳回</el-tag>
+          <el-tag v-else type="info">未提交</el-tag>
 
           <div>
             <el-button class="btn-reject" :disabled="scope.row.jobAuthStatus==REJECT" type="text" @click="handleVerify(scope.$index,'job' ,REJECT)">驳回</el-button>
@@ -116,8 +119,9 @@ import { getStudentInfo, verifyInfo } from '@/api/infoVerify'
 import Pagination from '@/components/Pagination'
 
 const UNCHECKED = 0
-const PASS = 1
-const REJECT = 2
+const CHECKING = 1
+const PASS = 2
+const REJECT = 3
 
 const BOS_ADDR = 'https://single-student.bj.bcebos.com/'
 export default {
@@ -128,6 +132,7 @@ export default {
   data() {
     return {
       UNCHECKED,
+      CHECKING,
       PASS,
       REJECT,
 
