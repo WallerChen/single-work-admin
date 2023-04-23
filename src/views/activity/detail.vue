@@ -56,7 +56,9 @@
           </el-col>
           <el-col :span="4" style="text-align: right;"> 地图坐标： </el-col>
           <el-col :span="8">
-            <el-input v-model="activityForm.geoLoc" />
+            <el-input v-model="activityForm.geoLoc">
+              <el-button slot="append" icon="el-icon-location-information" @click="showMap = true" />
+            </el-input>
           </el-col>
         </el-form-item>
 
@@ -77,21 +79,27 @@
       <Editor id="editor" v-model="content" :init="tinymceInit" />
     </div>
 
+    <Position :maker-position.sync="position" :dialog-visible.sync="showMap" @confirm="onMapConfirm" />
+
   </div>
 </template>
 
 <script>
 import Editor from '@tinymce/tinymce-vue'
+import Position from '@/components/Position'
 
 import { createActivity, updateActivity, getActivity } from '@/api/activity'
 
 export default {
   name: 'ActivityDetail',
   components: {
-    Editor
+    Editor,
+    Position
   },
   data() {
     return {
+      position: [114.06, 22.54],
+      showMap: false,
       mode: 'create', // create, edit
       content: '',
       coverImg: '',
@@ -109,14 +117,14 @@ export default {
         images_upload_max_filesize: '2m'// 限制图片文件大小
       },
       activityForm: {
-        title: 'title',
-        coverImg: 'coverImg',
-        price: 12.34,
+        title: '',
+        coverImg: '',
+        price: '',
         timeRange: [new Date(), new Date()],
-        brief: 'brief',
-        organizer: 'organizer',
-        location: 'location',
-        geoLoc: 'geoLoc'
+        brief: '',
+        organizer: '',
+        location: '',
+        geoLoc: ''
       }
     }
   },
@@ -166,7 +174,14 @@ export default {
         this.coverImg = reader.result
       }
     },
-
+    onMapConfirm(e) {
+      console.log('onMapConfirm', e)
+      this.activityForm.geoLoc = `${e.position[0]}, ${e.position[1]}`
+      if (!this.activityForm.location) {
+        // 如果没有填写地点，则自动填写
+        this.activityForm.location = e.address
+      }
+    },
     onPublish() {
       console.log(this.content)
     },
@@ -208,7 +223,8 @@ export default {
   }
 }
 
-.cover, .cover-uploader-icon {
+.cover,
+.cover-uploader-icon {
   min-width: 5rem;
   height: 5rem;
   display: flex;
