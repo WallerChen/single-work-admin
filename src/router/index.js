@@ -62,7 +62,14 @@ export const constantRoutes = [
       name: 'activity',
       component: () => import('@/views/activity/index'),
       meta: { title: '活动', icon: 'dashboard' }
-    }]
+    }, {
+      hidden: true,
+      path: 'detail',
+      name: 'activityDetail',
+      component: () => import('@/views/activity/detail'),
+      meta: { title: '活动详情', icon: 'dashboard' }
+    }
+    ]
   }, {
     path: '/auth',
     component: Layout,

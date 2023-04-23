@@ -1,224 +1,158 @@
 <template>
-  <div class="dashboard-container">
-    <el-row type="flex" justify="center"> 
-      <el-upload
-        class="avatar-uploader"
-        drag
-        action=""
-        :show-file-list="false"
-        :before-upload="uploadFile">
-        <img v-if="imageUrl" :src="imageUrl" class="avatar">
-      </el-upload>
-      <!-- <el-input placeholder="活动图片" size="mini" class="search"/> -->
-      <!-- <el-input placeholder="请输入昵称" size="mini" v-model="searchWord" class="search">
-      <el-button slot="append" icon="el-icon-search"></el-button>
-    </el-input> -->
-    </el-row>
-    <el-row style="margin-top: 10px;">
-      <el-input v-model="activityTitle" placeholder="活动名称" size="mini" class="search"/>
-      <el-input v-model="activityDesc" placeholder="活动介绍" size="mini" class="activity-desc"/>
-      <el-input v-model="activityPrice" placeholder="活动价格" size="mini" class="activity-desc"/>
-      <el-input v-model="activityOrganizer" placeholder="组织者" size="mini" class="activity-desc"/>
+  <div class="main">
 
-      <el-button style="margin-left: 10px;" type="success" size="mini" @click="createActivity">创建</el-button>
-    </el-row>
-    <el-table
-      :data="tableData"
-      size="mini"
-      style="width: 100%">
-      <el-table-column
-        prop="title"
-        label="活动名称"
-        width="180">
-      </el-table-column>
-      <el-table-column
-        prop="images"
-        label="活动图片"
-        width="180">
+    <div>
+      <el-button size="mini" type="primary" @click="onCreate">新建活动</el-button>
+    </div>
+
+    <el-table v-loading="listLoading" :data="tableData" border header-align="center" align="center">
+      <el-table-column prop="title" label="名称" width="100" />
+      <el-table-column prop="price" label="价格" width="120" />
+      <el-table-column prop="location" label="地点" width="120" />
+      <el-table-column prop="brief" label="简介" />
+      <el-table-column prop="organizer" label="组织者" width="120" />
+      <!--  -->
+
+      <el-table-column prop="createdAt" label="创建时间" width="160">
         <template slot-scope="scope">
-          <img :src="scope.row.images" class="activity-image" mode="aspectFill" />
+          {{ scope.row.createdAt | formatDate('YYYY-MM-DD HH:mm:ss') }}
         </template>
       </el-table-column>
-      <el-table-column
-        prop="content"
-        label="活动详情"
-        width="250">
+      <el-table-column prop="updatedAt" label="更新时间" width="160">
         <template slot-scope="scope">
-          <div class="desc-show">{{scope.row.content}}</div>
+          {{ scope.row.updatedAt | formatDate('YYYY-MM-DD HH:mm:ss') }}
         </template>
       </el-table-column>
-      <el-table-column label="操作">
-      <template slot-scope="scope">
-        <!-- <el-button
-          size="mini"
-          @click="handleEdit(scope.$index, scope.row)">{{ scope.row.edit ? '完成' : '编辑' }} </el-button> -->
-        <el-button
-          size="mini"
-          type="danger"
-          @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-      </template>
-    </el-table-column>
+
+      <el-table-column label="操作" width="150">
+        <template slot-scope="scope">
+          <div>
+            <el-button size="mini" type="primary" @click="onEdit(scope.row.id)">编辑</el-button>
+            <el-button size="mini" type="danger" @click="onRemove(scope.row.id)">删除</el-button>
+          </div>
+        </template>
+      </el-table-column>
     </el-table>
+
+    <pagination
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      :auto-scroll="false"
+      @pagination="fetchData"
+    />
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { Message } from 'element-ui'
-import { createAct, getAct, deleteAct } from '../../api/group'
-import { BosClient } from '@baiducloud/sdk'
+import { getActivityList } from '@/api/activity'
+import Pagination from '@/components/Pagination'
+import moment from 'moment'
 
-let config = {
- credentials: {
-      ak: 'ALTAKDX222UNidxlCOLsYRUhtH',       //您的AK
-      sk: '6ad5e18a3cb546bc9a10eb52e04a13f7'        //您的SK
-   },
- endpoint: 'https://bj.bcebos.com'  //需要根据bucket所属局域进行修改
-};
-
-const client = new BosClient(config);
 export default {
-  name: 'Dashboard',
+  name: 'Activity',
+  components: {
+    Pagination
+  },
+  filters: {
+    formatDate(time, format) {
+      if (!time) return ''
+      return moment(time).format(format)
+    }
+  },
   data() {
     return {
-      tableData: [],
-      searchWord: '',
-      select: '',
-      imageUrl: '',
-      options: [
-        1,2,3,4,5
-      ],
-      optionsShow: [
-        {
-          label: '展示',
-          value: 1
-        },
-        {
-          label: '不展示',
-          value: 0
-        }
-      ],
-      updateObj:{},
 
-      activityTitle: '',
-      activityDesc: '',
-      activityPrice: '',
-      activityOrganizer: '',
-      isEdit: false
-  };
-},
-  computed: {
-    ...mapGetters([
-      'name'
-    ])
+      listLoading: false,
+      searchStatus: '',
+
+      tableData: [],
+
+      total: 0,
+      listQuery: {
+        page: 1,
+        limit: 5
+      }
+    }
   },
-  created() {
-      this.getAct();
+  async created() {
+    this.fetchData()
   },
   methods: {
-    // 删除
-    handleDelete(index, row) {
-      deleteAct({id: row.id}).then( res => {
-        this.getAct();
+
+    onEdit(id) {
+      this.$router.push({ path: `/activity/detail?mode=edit&id=${id}` })
+    },
+    onRemove(id) {
+      this.$confirm('删除该活动, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '删除成功!'
+        })
+      }).catch(() => {
+        // pass
       })
     },
-    // 获取活动
-    getAct() {
-      getAct().then(res=> {
-        this.tableData = res.rows;
-      })
-    },
-    // 创建活动
-    createActivity() {
-      let params = {
-        images: 'https://normal-wr.bj.bcebos.com/93fe148c62684bd7d6a35ffccfadfd30.jpeg',
-        title: this.activityTitle,
-        content: this.activityDesc,
-        price: this.activityPrice,
-        organizer: this.activityOrganizer,
-        images: this.imageUrl
-      };
-      createAct(params).then(res=> {
-        this.getAct();
-        this.activityTitle = '';
-        this.activityDesc = '';
-        this.activityPrice = '';
-        this.activityOrganizer = '';
-        console.log('----res:' + JSON.stringify(res));
-      })
-    },
-    // 上传头像
-    uploadFile(file) {
-      console.log('------333');
-      console.log('fiel:' + file);
-      let date = new Date();
-      let dateTimeStr = date.getTime();
-      let fileName = dateTimeStr + '-' + file.name;
-      let reader = new FileReader();
-      reader.readAsArrayBuffer(file);
-      reader.onload = e => {
-        client.putObject("normal-wr" , fileName, new Buffer(e.target.result)).then(res=> {
-          // this.img = 
-          this.imageUrl = 'https://normal-wr.bj.bcebos.com/' + fileName;
-        });
+
+    async fetchData() {
+      this.listLoading = true
+
+      const query = {
+        limit: this.listQuery.limit,
+        offset: (this.listQuery.page - 1) * this.listQuery.limit,
+        status: this.searchStatus
       }
+
+      getActivityList(query).then(res => {
+        console.log('res', res)
+        this.tableData = res.rows
+        this.total = res.total
+        this.listLoading = false
+      })
+      this.tableData = []
+      this.listLoading = false
+    },
+    handleSearch() {
+      this.fetchData()
+    },
+    onCreate() {
+      this.$router.push({ path: '/activity/detail?mode=create' })
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.dashboard {
-  &-container {
-    margin: 30px;
-  }
-  &-text {
-    font-size: 30px;
-    line-height: 46px;
-  }
+.main {
+  margin: 1rem;
 }
 
-.search {
-  margin-left: 30px;
-  width: 200px;
+.searcher {
+  margin-bottom: 2rem;
 }
 
-.activity-desc {
-  margin-left: 30px;
-  width: 200px;
-}
+.img-list {
+  // height: 10rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
-.activity-image {
-  height: 150px;
-  width: 150px;
-}
-
-.desc-show {
-  height: 100px;
-  overflow-y: scroll
-}
-
-.avatar-uploader .el-upload {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  .avatar-uploader .el-upload:hover {
-    border-color: #409EFF;
-  }
-  .avatar-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 178px;
-    height: 178px;
-    line-height: 178px;
-    text-align: center;
-  }
-  .avatar {
-    width: 100%;
-    height: 178px;
+  .image {
     display: block;
+    border: 1px solid black;
+    width: 6rem;
+    height: 6rem;
+    margin: 0.5rem;
+    flex-shrink: 0;
   }
+}
+
+.btn-reject:not(:disabled) {
+  color: red;
+}
 </style>

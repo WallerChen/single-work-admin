@@ -17,11 +17,13 @@
   },
   "dependencies": {
     "@baiducloud/sdk": "^1.0.0-rc.38",
+    "@tinymce/tinymce-vue": "^3",
     "axios": "0.18.1",
     "core-js": "^3.28.0",
     "debug": "^4.3.4",
     "element-ui": "2.13.2",
     "js-cookie": "2.2.0",
+    "moment": "^2.29.4",
     "normalize.css": "7.0.0",
     "nprogress": "0.2.0",
     "path-to-regexp": "2.4.0",
