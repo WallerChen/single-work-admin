@@ -6,8 +6,26 @@
     </div>
 
     <el-table v-loading="listLoading" :data="tableData" border header-align="center" align="center">
-      <el-table-column prop="title" label="名称" width="100" />
+      <el-table-column prop="id" label="ID" width="100" />
+      <el-table-column prop="title" label="名称" width="200" />
+
+      <el-table-column label="封面">
+        <template slot-scope="scope">
+          <div class="img-list">
+            <el-image
+              v-for="(item, index) in [scope.row.coverImg]"
+              :key="index"
+              class="image"
+              :src="item"
+              :preview-src-list="[scope.row.coverImg]"
+            />
+          </div>
+        </template>
+      </el-table-column>
+
+      <el-table-column prop="status" label="状态" width="100" />
       <el-table-column prop="price" label="价格" width="120" />
+      <el-table-column prop="timeRange" label="时间" width="120" />
       <el-table-column prop="location" label="地点" width="120" />
       <el-table-column prop="brief" label="简介" />
       <el-table-column prop="organizer" label="组织者" width="120" />
@@ -150,9 +168,5 @@ export default {
     margin: 0.5rem;
     flex-shrink: 0;
   }
-}
-
-.btn-reject:not(:disabled) {
-  color: red;
 }
 </style>

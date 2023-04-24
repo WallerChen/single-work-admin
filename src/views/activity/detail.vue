@@ -1,14 +1,14 @@
 <template>
   <div class="main">
 
-    <h1 v-if="mode=='update'">编辑活动</h1>
+    <h1 v-if="mode=='edit'">编辑活动</h1>
     <h1 v-else>创建活动</h1>
 
     <div>
       <!-- 当前活动状态 -->
       <div class="btn-group">
-        <el-button size="small" type="primary" @click="onPublish">发布</el-button>
-        <el-button size="small" type="warning" @click="onSave">保存草稿</el-button>
+        <el-button size="small" type="warning" @click="onSave(true)">发布</el-button>
+        <el-button size="small" type="primary" @click="onSave(true)">保存草稿</el-button>
       </div>
     </div>
 
@@ -17,6 +17,16 @@
       <el-form ref="form" :model="activityForm" label-width="80px" size="mini">
         <el-form-item label="名称">
           <el-input v-model="activityForm.title" />
+        </el-form-item>
+
+        <el-form-item label="状态">
+          <el-select v-model="activityForm.status">
+            <el-option label="草稿" :value="0" />
+            <el-option label="已发布" :value="1" />
+            <el-option label="已取消" :value="2" />
+            <el-option label="进行中" :value="3" />
+            <el-option label="已结束" :value="4" />
+          </el-select>
         </el-form-item>
 
         <el-form-item label="价格">
@@ -100,7 +110,7 @@ export default {
     return {
       position: [114.06, 22.54],
       showMap: false,
-      mode: 'create', // create, edit
+      // mode: 'create', // create, edit
       content: '',
       coverImg: '',
       tinymceInit: {
@@ -118,6 +128,7 @@ export default {
       },
       activityForm: {
         title: '',
+        status: 0,
         coverImg: '',
         price: '',
         timeRange: [new Date(), new Date()],
@@ -128,9 +139,14 @@ export default {
       }
     }
   },
+  computed: {
+    mode() { // mode: 'create', // create, edit
+      return this.$route.query.mode
+    }
+  },
   async created() {
     // get params from query
-    this.mode = this.$route.query.mode
+    // this.mode = this.$route.query.mode
     this.id = this.$route.query.id
 
     console.log('mode', this.mode)
@@ -182,23 +198,44 @@ export default {
         this.activityForm.location = e.address
       }
     },
-    onPublish() {
-      console.log(this.content)
-    },
-    onSave() {
+    async onSave(isPublish) {
       const form = JSON.parse(JSON.stringify(this.activityForm))
       form.price = form.price * 100
       form.content = this.content
       form.timeStart = new Date(form.timeRange[0]).valueOf()
       form.timeEnd = new Date(form.timeRange[1]).valueOf()
 
+      // 提交封面图通过bas64 图片，显示封面图则转为url
+      form.coverImg = this.coverImg
+      form.isPublish = isPublish
+
+      // show loading
+      this.$loading({
+        lock: true,
+        text: '保存中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
+
       if (this.mode === 'edit') {
-        updateActivity(this.id, form).then(res => {
-          console.log('update res', res)
-        })
+        const res = await updateActivity(this.id, form)
+        console.log('update res', res)
+
+        this.$loading().close()
+        this.$message({ message: '保存成功', type: 'success' })
       } else {
-        createActivity(form).then(res => {
-          console.log('create res', res)
+        const res = await createActivity(form)
+
+        this.$loading().close()
+        this.$message({ message: '保存成功', type: 'success' })
+
+        console.log('create res', res)
+        const id = res.id
+
+        // redirect to edit page
+        this.$router.replace({
+          path: '/activity/detail',
+          query: { mode: 'edit', id }
         })
       }
     }
