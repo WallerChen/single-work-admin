@@ -1,3 +1,4 @@
+import moment from 'moment'
 /**
  * Created by PanJiaChen on 16/11/18.
  */
@@ -114,4 +115,36 @@ export function param2Obj(url) {
     }
   })
   return obj
+}
+
+// return human friendly time range string
+// if startTs and endTs are in the same day, return 'YYYY-MM-DD HH:mm - HH:mm'
+// if startTs and endTs are in the same month, return 'YYYY-MM-DD HH:mm - DD HH:mm'
+export function getTimeRangeString(startTs, endTs) {
+  const start = new Date(startTs)
+  const end = new Date(endTs)
+
+  const startYear = start.getFullYear()
+  const startMonth = start.getMonth() + 1
+  const startDay = start.getDate()
+  const endYear = end.getFullYear()
+  const endMonth = end.getMonth() + 1
+  const endDay = end.getDate()
+
+  if (startTs === endTs) {
+    return moment(startTs).format('YYYY-MM-DD HH:mm')
+  }
+
+  if (startYear === endYear && startMonth === endMonth && startDay === endDay) {
+    return moment(startTs).format('YYYY-MM-DD HH:mm') + ' ~ ' + moment(endTs).format('HH:mm')
+  }
+  if (startYear === endYear && startMonth === endMonth) {
+    return moment(startTs).format('YYYY-MM-DD HH:mm') + ' ~ ' + moment(endTs).format('DD HH:mm')
+  }
+
+  if (startYear === endYear) {
+    return moment(startTs).format('YYYY-MM-DD HH:mm') + ' ~ ' + moment(endTs).format('MM-DD HH:mm')
+  }
+
+  return moment(startTs).format('YYYY-MM-DD HH:mm') + ' ~ ' + moment(endTs).format('YYYY-MM-DD HH:mm')
 }

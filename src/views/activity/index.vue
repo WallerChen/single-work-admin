@@ -5,7 +5,7 @@
       <el-button size="mini" type="primary" @click="onCreate">新建活动</el-button>
     </div>
 
-    <el-table v-loading="listLoading" :data="tableData" border header-align="center" align="center">
+    <el-table v-loading="listLoading" :data="tableData" border header-align="center" align="center" size="small" stripe>
       <el-table-column prop="id" label="ID" width="100" />
       <el-table-column prop="title" label="名称" width="200" />
 
@@ -25,7 +25,7 @@
 
       <el-table-column prop="status" label="状态" width="100" />
       <el-table-column prop="price" label="价格" width="120" />
-      <el-table-column prop="timeRange" label="时间" width="120" />
+      <el-table-column prop="timeRange" label="时间" width="200" />
       <el-table-column prop="location" label="地点" width="120" />
       <el-table-column prop="brief" label="简介" />
       <el-table-column prop="organizer" label="组织者" width="120" />
@@ -42,7 +42,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" width="150">
+      <el-table-column label="操作" width="150" :fixed="'right'">
         <template slot-scope="scope">
           <div>
             <el-button size="mini" type="primary" @click="onEdit(scope.row.id)">编辑</el-button>
@@ -66,6 +66,7 @@
 import { getActivityList } from '@/api/activity'
 import Pagination from '@/components/Pagination'
 import moment from 'moment'
+import { getTimeRangeString } from '@/utils'
 
 export default {
   name: 'Activity',
@@ -97,7 +98,6 @@ export default {
     this.fetchData()
   },
   methods: {
-
     onEdit(id) {
       this.$router.push({ path: `/activity/detail?mode=edit&id=${id}` })
     },
@@ -127,6 +127,12 @@ export default {
 
       getActivityList(query).then(res => {
         console.log('res', res)
+
+        for (let i = 0; i < res.rows.length; i++) {
+          const item = res.rows[i]
+          res.rows[i].timeRange = getTimeRangeString(item.timeStart, item.timeEnd)
+        }
+
         this.tableData = res.rows
         this.total = res.total
         this.listLoading = false
