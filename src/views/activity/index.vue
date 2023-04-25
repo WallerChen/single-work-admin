@@ -5,11 +5,11 @@
       <el-button size="mini" type="primary" @click="onCreate">新建活动</el-button>
     </div>
 
-    <el-table v-loading="listLoading" :data="tableData" border header-align="center" align="center" size="small" stripe>
-      <el-table-column prop="id" label="ID" width="100" />
+    <el-table v-loading="listLoading" :data="tableData" border fit highlight-current-row size="small" stripe>
+      <el-table-column prop="id" label="ID" width="80" align="center" />
       <el-table-column prop="title" label="名称" width="200" />
 
-      <el-table-column label="封面">
+      <el-table-column label="封面" width="160">
         <template slot-scope="scope">
           <div class="img-list">
             <el-image
@@ -23,20 +23,30 @@
         </template>
       </el-table-column>
 
-      <el-table-column prop="status" label="状态" width="100" />
-      <el-table-column prop="price" label="价格" width="120" />
+      <el-table-column prop="status" label="状态" width="100">
+        <template slot-scope="scope">
+          <el-tag :type="statusMap[scope.row.status].type">
+            {{ statusMap[scope.row.status].txt }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="price" label="价格" width="120">
+        <template slot-scope="scope">
+          <span v-if="scope.row.price">¥{{ scope.row.price/100 }}</span>
+          <span v-else>免费</span>
+        </template></el-table-column>
       <el-table-column prop="timeRange" label="时间" width="200" />
-      <el-table-column prop="location" label="地点" width="120" />
-      <el-table-column prop="brief" label="简介" />
+      <el-table-column prop="location" label="地点" width="160" />
+      <el-table-column prop="brief" label="简介" width="160" />
       <el-table-column prop="organizer" label="组织者" width="120" />
       <!--  -->
 
-      <el-table-column prop="createdAt" label="创建时间" width="160">
+      <el-table-column prop="createdAt" label="创建时间" width="140">
         <template slot-scope="scope">
           {{ scope.row.createdAt | formatDate('YYYY-MM-DD HH:mm:ss') }}
         </template>
       </el-table-column>
-      <el-table-column prop="updatedAt" label="更新时间" width="160">
+      <el-table-column prop="updatedAt" label="更新时间" width="140">
         <template slot-scope="scope">
           {{ scope.row.updatedAt | formatDate('YYYY-MM-DD HH:mm:ss') }}
         </template>
@@ -81,6 +91,13 @@ export default {
   },
   data() {
     return {
+      statusMap: {
+        0: { type: 'info', txt: '未发布' },
+        1: { type: 'success', txt: '已发布' },
+        2: { type: 'danger', txt: '已取消' }
+        // 3: { type: 'primary', txt: '进行中' },
+        // 4: { type: 'primary', txt: '已结束' }
+      },
 
       listLoading: false,
       searchStatus: '',

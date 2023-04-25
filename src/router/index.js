@@ -56,7 +56,6 @@ export const constantRoutes = [
   }, {
     path: '/activity',
     component: Layout,
-    redirect: '/activity',
     children: [{
       path: 'activity',
       name: 'activity',

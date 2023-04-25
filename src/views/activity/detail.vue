@@ -5,10 +5,16 @@
     <h1 v-else>创建活动</h1>
 
     <div>
-      <!-- 当前活动状态 -->
+
       <div class="btn-group">
-        <el-button size="small" type="warning" @click="onSave(true)">发布</el-button>
-        <el-button size="small" type="primary" @click="onSave(true)">保存草稿</el-button>
+        <!-- 当前活动状态 -->
+        <el-tag :type="statusMap[activityStatus].type" style="margin-right: 10px;">
+          {{ statusMap[activityStatus].txt }}
+        </el-tag>
+
+        <el-button v-if="activityStatus==0" size="small" type="warning" @click="onPublish()">保存并发布</el-button>
+        <el-button size="small" type="primary" @click="onSave()">保存</el-button>
+
       </div>
     </div>
 
@@ -18,14 +24,9 @@
         <el-form-item label="名称">
           <el-input v-model="activityForm.title" />
         </el-form-item>
-
         <el-form-item label="状态">
           <el-select v-model="activityForm.status">
-            <el-option label="草稿" :value="0" />
-            <el-option label="已发布" :value="1" />
-            <el-option label="已取消" :value="2" />
-            <el-option label="进行中" :value="3" />
-            <el-option label="已结束" :value="4" />
+            <el-option v-for="(item, key) in statusMap" :key="key" :label="item.txt" :value="Number(key)" />
           </el-select>
         </el-form-item>
 
@@ -54,6 +55,7 @@
             value-format="yyyy-MM-dd HH:mm:ss"
           />
         </el-form-item>
+
         <el-form-item label="简介">
           <el-input v-model="activityForm.brief" />
         </el-form-item>
@@ -108,6 +110,15 @@ export default {
   },
   data() {
     return {
+      activityStatus: 0,
+      statusMap: {
+        0: { type: 'info', txt: '未发布' },
+        1: { type: 'success', txt: '已发布' },
+        2: { type: 'danger', txt: '已取消' }
+        // 3: { type: 'primary', txt: '进行中' },
+        // 4: { type: 'primary', txt: '已结束' }
+      },
+
       position: [114.06, 22.54],
       showMap: false,
       // mode: 'create', // create, edit
@@ -157,8 +168,10 @@ export default {
       const res = await getActivity(this.id)
       console.log('res', res)
       res.timeRange = [new Date(res.timeStart), new Date(res.timeEnd)]
+      res.price = res.price / 100
       this.activityForm = res
       this.content = res.content
+      this.activityStatus = res.status
     }
   },
   methods: {
@@ -198,7 +211,11 @@ export default {
         this.activityForm.location = e.address
       }
     },
-    async onSave(isPublish) {
+    async onPublish() {
+      this.activityForm.status = 1
+      this.onSave()
+    },
+    async onSave() {
       const form = JSON.parse(JSON.stringify(this.activityForm))
       form.price = form.price * 100
       form.content = this.content
@@ -207,7 +224,6 @@ export default {
 
       // 提交封面图通过bas64 图片，显示封面图则转为url
       form.coverImg = this.coverImg
-      form.isPublish = isPublish
 
       // show loading
       this.$loading({
@@ -217,26 +233,31 @@ export default {
         background: 'rgba(0, 0, 0, 0.7)'
       })
 
-      if (this.mode === 'edit') {
-        const res = await updateActivity(this.id, form)
-        console.log('update res', res)
+      try {
+        if (this.mode === 'edit') {
+          const res = await updateActivity(this.id, form)
+          console.log('update res', res)
 
+          this.$loading().close()
+          this.$message({ message: '保存成功', type: 'success' })
+        } else {
+          const res = await createActivity(form)
+
+          this.$loading().close()
+          this.$message({ message: '保存成功', type: 'success' })
+
+          console.log('create res', res)
+          const id = res.id
+
+          // redirect to edit page
+          this.$router.replace({
+            path: '/activity/detail',
+            query: { mode: 'edit', id }
+          })
+        }
+      } catch (error) {
         this.$loading().close()
-        this.$message({ message: '保存成功', type: 'success' })
-      } else {
-        const res = await createActivity(form)
-
-        this.$loading().close()
-        this.$message({ message: '保存成功', type: 'success' })
-
-        console.log('create res', res)
-        const id = res.id
-
-        // redirect to edit page
-        this.$router.replace({
-          path: '/activity/detail',
-          query: { mode: 'edit', id }
-        })
+        this.$message({ message: `保存失败: ${error}`, type: 'error' })
       }
     }
   }
@@ -269,5 +290,4 @@ export default {
   align-items: center;
   border: 1px dashed gray;
 }
-
 </style>
