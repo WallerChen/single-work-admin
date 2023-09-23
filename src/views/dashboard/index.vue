@@ -6,110 +6,81 @@
       <el-button size="mini" @click="getInfoByClass('three')">三班</el-button>
       <el-button size="mini" @click="getInfoByClass('four')">四班</el-button>
 
-      <el-input placeholder="请输入昵称" size="mini" v-model="searchWord" class="search">
-      <el-button slot="append" icon="el-icon-search" @click="getInfoByNickName()"></el-button>
-    </el-input>
+      <el-input v-model="searchWord" placeholder="请输入昵称" size="mini" class="search">
+        <el-button slot="append" icon="el-icon-search" @click="getInfoByNickName()" />
+      </el-input>
     </el-row>
-    <el-table
-      :data="tableData"
-      size="mini"
-      style="width: 100%">
-      <el-table-column
-        prop="class"
-        label="班级"
-        width="180">
-      </el-table-column>
-      <el-table-column
-        prop="avatar_url"
-        label="用户头像"
-        width="180">
-      </el-table-column>
-      <el-table-column
-        prop="nick_name"
-        label="用户昵称"
-        width="100">
-      </el-table-column>
-      <el-table-column
-        prop="desc"
-        label="用户介绍"
-        sortable
-        width="250">
+    <el-table :data="tableData" size="mini" style="width: 100%" border>
+      <el-table-column prop="id" label="#" />
+      <el-table-column prop="classId" label="班级" width="100" />
+      <el-table-column label="用户头像" width="150">
         <template slot-scope="scope">
-          <div v-if="!scope.row.edit" class="desc-show">{{scope.row.desc}}</div>
-          <div v-else>
-              <el-input
-              type="textarea"
-              :rows="5"
-              placeholder="请输入内容"
-              v-model="scope.row.desc">
-            </el-input>
+          <img v-if="scope.row.avatarUrl" :src="scope.row.avatarUrl" class="picture">
+          <div v-else class="picture">
+            无照片
           </div>
-          
         </template>
       </el-table-column>
-      <el-table-column
-        prop="score"
-        label="用户质量分"
-        sortable
-        width="120">
+      <el-table-column label="照片墙" width="300">
         <template slot-scope="scope">
-          <el-select v-model="scope.row.score" size="mini" placeholder="请打分"  @change="userScore($event, scope.row.id)">
+
+          <img v-for="(index,item) in scope.row.imageList" :key="index" :src="item" class="picture">
+
+        </template>
+      </el-table-column>
+
+      <el-table-column prop="nickname" label="用户昵称" width="100" />
+      <el-table-column prop="desc" label="用户介绍" sortable width="250">
+        <template slot-scope="scope">
+          <div v-if="!scope.row.edit" class="desc-show">{{ scope.row.desc }}</div>
+          <el-input v-else v-model="scope.row.desc" type="textarea" />
+        </template>
+      </el-table-column>
+      <el-table-column prop="score" label="用户质量分" sortable width="120">
+        <template slot-scope="scope">
+          <el-select v-model="scope.row.score" size="mini" placeholder="请打分" @change="userScore($event, scope.row.id)">
             <el-option
-              v-for="item in options"
+              v-for="item in [1, 2, 3, 4, 5]"
               :key="item + scope.row.id"
               :label="item"
-              :value="item">
-            </el-option>
+              :value="item"
+            />
           </el-select>
         </template>
       </el-table-column>
-      <el-table-column
-        prop="desc"
-        label="强制排序"
-        sortable
-        width="100">
+      <el-table-column hidden prop="desc" label="强制排序" sortable width="100">
         <template slot-scope="scope">
-          <div v-if="!scope.row.edit" class="desc-show">{{scope.row.rank}}</div>
-          <div v-else>
-              <el-input
-              placeholder="请输入排序"
-              v-model="scope.row.rank">
-            </el-input>
-          </div>
+          <div v-if="!scope.row.edit">{{ scope.row.rank }}</div>
+          <el-inpu v-else v-model="scope.row.rank" placeholder="请输入排序" />
         </template>
       </el-table-column>
-      <el-table-column
-        prop="is_show"
-        label="是否展示"
-        sortable
-        width="120">
+      <el-table-column label="是否展示" sortable width="120">
         <template slot-scope="scope">
-          <el-select v-model="scope.row.is_show" size="mini" placeholder="请选择"  @change="userShow($event, scope.row.id)">
-            <el-option
-              v-for="item in optionsShow"
-              :key="item.label + scope.row.id"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
+          <el-switch v-model="scope.row.isShow" />
         </template>
       </el-table-column>
-      <!-- <el-table-column
-        prop="created_at"
-        label="创建时间">
-      </el-table-column>
-      <el-table-column
-        prop="updated_at"
-        label="更新时间">
-      </el-table-column> -->
+      <el-table-column prop="created_at" label="创建时间" />
+      <el-table-column prop="updated_at" label="更新时间" />
       <el-table-column label="操作">
-      <template slot-scope="scope">
-        <el-button
-          size="mini"
-          @click="handleEdit(scope.$index, scope.row)">{{ scope.row.edit ? '完成' : '编辑' }} </el-button>
-      </template>
-    </el-table-column>
+        <template slot-scope="scope">
+          <el-button
+            size="mini"
+            @click="handleEdit(scope.$index, scope.row)"
+          >{{ scope.row.edit ? '完成' : '编辑' }} </el-button>
+        </template>
+      </el-table-column>
     </el-table>
+
+    <el-pagination
+      background
+      :current-page="curPage"
+      :page-sizes="[20, 50, 100, 200]"
+      :page-size="pageSize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
   </div>
 </template>
 
@@ -125,81 +96,86 @@ export default {
       tableData: [],
       searchWord: '',
       select: '',
-      options: [
-        1,2,3,4,5
-      ],
-      optionsShow: [
-        {
-          label: '展示',
-          value: 1
-        },
-        {
-          label: '不展示',
-          value: 0
-        }
-      ],
-      updateObj:{},
-      isEdit: false
-  };
-},
+      updateObj: {},
+      isEdit: false,
+      total: 0,
+      pageSize: 20,
+      curPage: 1,
+      classId: 'one'
+    }
+  },
   computed: {
     ...mapGetters([
       'name'
     ])
   },
   created() {
-    this.getInfoByClass('one');
+    this.getInfoByClass('one')
   },
   methods: {
-    // userDesc(value, id) {
-    //   updateUserInfo(id, {desc: value}).then(res=>{
-    //     console.log('resres:' + JSON.stringify(res));
-    //   });
-    // },
+    onClassClick(classId) {
+      this.classId = classId
+      this.getInfoByClass(this.classId)
+      this.curPage = 1
+    },
+    handleSizeChange(val) {
+      this.pageSize = val
+      this.getInfoByClass(this.classId)
+    },
+    handleCurrentChange(val) {
+      this.curPage = val
+      this.getInfoByClass(this.classId)
+    },
+
+    fetchData() {
+      this.getInfoByClass(this.classId)
+    },
     // 用户质量打分
     userScore(value, id) {
-      updateUserInfo(id, {score: value}).then(res=>{
-        console.log('resres:' + JSON.stringify(res));
-      });
+      updateUserInfo(id, { score: value }).then(res => {
+        console.log('resres:' + JSON.stringify(res))
+      })
     },
     // 用户展示
     userShow(value, id) {
-      updateUserInfo(id, {is_show: value}).then(res=>{
-        console.log('resres:' + JSON.stringify(res));
-      });
+      updateUserInfo(id, { is_show: value }).then(res => {
+        console.log('resres:' + JSON.stringify(res))
+      })
     },
     // 编辑用户信息
     handleEdit(index, row) {
-      if(this.isEdit && !row.edit) {
+      if (this.isEdit && !row.edit) {
         Message({
           message: '一次性只能编辑一个用户',
           type: 'error',
           duration: 3 * 1000
         })
-        return;
+        return
       }
-      this.updateObj = row;
-      if(this.isEdit) { 
-        const {desc, rank} = this.updateObj;
-        updateUserInfo(row.id, {desc, rank}).then(res=>{
-          console.log('resres:' + JSON.stringify(res));
-        });
-        this.isEdit = false;
-        this.$set(this.tableData, index, {...row, ...this.updateObj, edit: false});
+      this.updateObj = row
+      if (this.isEdit) {
+        const { desc, rank } = this.updateObj
+        updateUserInfo(row.id, { desc, rank }).then(res => {
+          console.log('resres:' + JSON.stringify(res))
+        })
+        this.isEdit = false
+        this.$set(this.tableData, index, { ...row, ...this.updateObj, edit: false })
       } else {
-      row.edit = true;
-      this.isEdit = true;
-      this.$set(this.tableData, index, row);
-    }
+        row.edit = true
+        this.isEdit = true
+        this.$set(this.tableData, index, row)
+      }
     },
-    getInfoByClass(cls) {
-      getList({cls}).then(res => {
-        this.tableData = res.rows;
+    getInfoByClass(classId) {
+      getList({ classId, page: this.curPage, limit: this.pageSize }).then(res => {
+        console.log('RES', res)
+        this.tableData = res.data.list
+        this.total = res.data.total
       })
     },
     getInfoByNickName() {
-      getListByNickname({nickName: this.searchWord}).then(res=> {
-        this.tableData = res.rows;
+      getListByNickname({ nickName: this.searchWord }).then(res => {
+        this.tableData = res.rows
       })
     }
   }
@@ -211,6 +187,7 @@ export default {
   &-container {
     margin: 30px;
   }
+
   &-text {
     font-size: 30px;
     line-height: 46px;
@@ -223,7 +200,17 @@ export default {
 }
 
 .desc-show {
-  height: 100px;
+  // height: 100px;
+  height: 5rem;
+  box-sizing: border-box;
+  // border: 1px solid black;
   overflow-y: scroll
+}
+
+.picture {
+  width: 5rem;
+  height: 5rem;
+  border: 1px solid gray;
+
 }
 </style>

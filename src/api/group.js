@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 // 代理域名配置
-const path = process.env.NODE_ENV  === 'development' ?  'single' : '';
+const path = process.env.NODE_ENV === 'development' ? 'single' : ''
 
 // 获取活动列表
 export function getAct(params) {
@@ -20,7 +20,6 @@ export function deleteAct(params) {
   })
 }
 
-
 // 创建活动
 export function createAct(params) {
   return request({
@@ -32,25 +31,25 @@ export function createAct(params) {
 
 export function getList(params) {
   return request({
-    url: `${path}/admin/users/index`,
+    url: `${path}/api/admin/userList`,
     method: 'get',
     params
   })
 }
 
 export function getListByNickname(params) {
-    return request({
-        url: `${path}/admin/users/fuzzySearch`,
-        method: 'get',
-        params
-    })
+  return request({
+    url: `${path}/admin/users/fuzzySearch`,
+    method: 'get',
+    params
+  })
 }
 
-export function updateUserInfo(id ,params) {
-    return request({
-        url: `${path}/admin/users/resultful/${id}`,
-        method: 'put',
-        data: params
-    })
+export function updateUserInfo(id, params) {
+  return request({
+    url: `${path}/admin/users/resultful/${id}`,
+    method: 'put',
+    data: params
+  })
 }
-  
+
