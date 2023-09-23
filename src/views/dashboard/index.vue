@@ -6,8 +6,8 @@
       <el-button size="mini" @click="getInfoByClass('three')">三班</el-button>
       <el-button size="mini" @click="getInfoByClass('four')">四班</el-button>
 
-      <el-input v-model="searchWord" placeholder="请输入昵称" size="mini" class="search">
-        <el-button slot="append" icon="el-icon-search" @click="getInfoByNickName()" />
+      <el-input v-model="searchName" placeholder="请输入昵称" size="mini" class="search">
+        <el-button slot="append" icon="el-icon-search" @click="onSearchName()" />
       </el-input>
 
       <el-switch v-model="showNobody" active-text="显示三无人员" @change="onToggleShowNobody" />
@@ -90,14 +90,14 @@
 <script>
 import { mapGetters } from 'vuex'
 import { Message } from 'element-ui'
-import { getList, getListByNickname, updateUserInfo } from '../../api/group'
+import { getList, updateUserInfo } from '../../api/group'
 
 export default {
   name: 'Dashboard',
   data() {
     return {
       tableData: [],
-      searchWord: '',
+      searchName: '',
       select: '',
       updateObj: {},
       isEdit: false,
@@ -117,6 +117,11 @@ export default {
     this.getInfoByClass(this.classId)
   },
   methods: {
+    onSearchName() {
+      this.curPage = 1
+      this.classId = ''
+      this.getInfoByClass(this.classId)
+    },
     onToggleShowNobody() {
       this.curPage = 1
       this.getInfoByClass(this.classId)
@@ -189,7 +194,8 @@ export default {
         classId,
         page: this.curPage,
         limit: this.pageSize,
-        showNobody: this.showNobody
+        showNobody: this.showNobody,
+        searchName: this.searchName
       }).then(res => {
         console.log('RES', res)
         this.tableData = res.data.list
@@ -197,9 +203,7 @@ export default {
       })
     },
     getInfoByNickName() {
-      getListByNickname({ nickName: this.searchWord }).then(res => {
-        this.tableData = res.rows
-      })
+
     }
   }
 }

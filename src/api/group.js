@@ -37,14 +37,6 @@ export function getList(params) {
   })
 }
 
-export function getListByNickname(params) {
-  return request({
-    url: `${path}/admin/users/fuzzySearch`,
-    method: 'get',
-    params
-  })
-}
-
 export function updateUserInfo(id, params) {
   return request({
     url: `${path}/api/admin/user/info`,
