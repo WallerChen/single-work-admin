@@ -47,9 +47,10 @@ export function getListByNickname(params) {
 
 export function updateUserInfo(id, params) {
   return request({
-    url: `${path}/admin/users/resultful/${id}`,
+    url: `${path}/api/admin/user/info`,
     method: 'put',
-    data: params
+    data: params,
+    params: { id }
   })
 }
 

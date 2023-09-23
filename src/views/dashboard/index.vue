@@ -27,7 +27,7 @@
       <el-table-column label="照片墙" width="300">
         <template slot-scope="scope">
 
-          <img v-for="(index,item) in scope.row.imageList" :key="index" :src="item" class="picture">
+          <img v-for="(index, item) in scope.row.imageList" :key="index" :src="item" class="picture">
 
         </template>
       </el-table-column>
@@ -41,7 +41,7 @@
       </el-table-column>
       <el-table-column prop="score" label="用户质量分" sortable width="120">
         <template slot-scope="scope">
-          <el-select v-model="scope.row.score" size="mini" placeholder="请打分" @change="userScore($event, scope.row.id)">
+          <el-select v-model="scope.row.score" size="mini" placeholder="请打分" @change="onUpdateUserScore(scope.row)">
             <el-option
               v-for="item in [1, 2, 3, 4, 5]"
               :key="item + scope.row.id"
@@ -51,15 +51,15 @@
           </el-select>
         </template>
       </el-table-column>
-      <el-table-column hidden prop="desc" label="强制排序" sortable width="100">
+      <!-- <el-table-column prop="desc" label="强制排序" sortable width="100">
         <template slot-scope="scope">
           <div v-if="!scope.row.edit">{{ scope.row.rank }}</div>
-          <el-inpu v-else v-model="scope.row.rank" placeholder="请输入排序" />
+          <el-input v-else v-model="scope.row.rank" placeholder="请输入排序" />
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column label="是否展示" sortable width="120">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.isShow" />
+          <el-switch v-model="scope.row.isShow" @change="onUpdateUserShow(scope.row)" />
         </template>
       </el-table-column>
       <el-table-column prop="created_at" label="创建时间" />
@@ -138,20 +138,25 @@ export default {
     fetchData() {
       this.getInfoByClass(this.classId)
     },
-    // 用户质量打分
-    userScore(value, id) {
-      updateUserInfo(id, { score: value }).then(res => {
-        console.log('resres:' + JSON.stringify(res))
-      })
+    async onUpdateUserShow(row) {
+      try {
+        await updateUserInfo(row.id, { isShow: row.isShow })
+        this.$message.success('更新成功')
+      } catch (error) {
+        this.$message.error('失败：' + error)
+      }
     },
-    // 用户展示
-    userShow(value, id) {
-      updateUserInfo(id, { is_show: value }).then(res => {
-        console.log('resres:' + JSON.stringify(res))
-      })
+    // 用户质量打分
+    async onUpdateUserScore(row) {
+      try {
+        await updateUserInfo(row.id, { score: row.score })
+        this.$message.success('更新成功')
+      } catch (error) {
+        this.$message.error('失败：' + error)
+      }
     },
     // 编辑用户信息
-    handleEdit(index, row) {
+    async handleEdit(index, row) {
       if (this.isEdit && !row.edit) {
         Message({
           message: '一次性只能编辑一个用户',
@@ -163,9 +168,14 @@ export default {
       this.updateObj = row
       if (this.isEdit) {
         const { desc, rank } = this.updateObj
-        updateUserInfo(row.id, { desc, rank }).then(res => {
-          console.log('resres:' + JSON.stringify(res))
-        })
+
+        try {
+          await updateUserInfo(row.id, { desc, rank })
+          this.$message.success('更新成功')
+        } catch (error) {
+          this.$message.error('失败：' + error)
+        }
+
         this.isEdit = false
         this.$set(this.tableData, index, { ...row, ...this.updateObj, edit: false })
       } else {
@@ -221,6 +231,7 @@ export default {
 }
 
 .picture {
+  object-fit: contain;
   width: 5rem;
   height: 5rem;
   border: 1px solid gray;
