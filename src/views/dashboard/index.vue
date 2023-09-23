@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <el-row>
+    <el-row style="margin-bottom: 2rem;">
       <el-button size="mini" @click="getInfoByClass('one')">一班</el-button>
       <el-button size="mini" @click="getInfoByClass('two')">二班</el-button>
       <el-button size="mini" @click="getInfoByClass('three')">三班</el-button>
@@ -9,7 +9,10 @@
       <el-input v-model="searchWord" placeholder="请输入昵称" size="mini" class="search">
         <el-button slot="append" icon="el-icon-search" @click="getInfoByNickName()" />
       </el-input>
+
+      <el-switch v-model="showNobody" active-text="显示三无人员" @change="onToggleShowNobody" />
     </el-row>
+
     <el-table :data="tableData" size="mini" style="width: 100%" border>
       <el-table-column prop="id" label="#" />
       <el-table-column prop="classId" label="班级" width="100" />
@@ -101,7 +104,8 @@ export default {
       total: 0,
       pageSize: 20,
       curPage: 1,
-      classId: 'one'
+      classId: 'one',
+      showNobody: true
     }
   },
   computed: {
@@ -110,13 +114,17 @@ export default {
     ])
   },
   created() {
-    this.getInfoByClass('one')
+    this.getInfoByClass(this.classId)
   },
   methods: {
+    onToggleShowNobody() {
+      this.curPage = 1
+      this.getInfoByClass(this.classId)
+    },
     onClassClick(classId) {
       this.classId = classId
-      this.getInfoByClass(this.classId)
       this.curPage = 1
+      this.getInfoByClass(this.classId)
     },
     handleSizeChange(val) {
       this.pageSize = val
@@ -167,7 +175,12 @@ export default {
       }
     },
     getInfoByClass(classId) {
-      getList({ classId, page: this.curPage, limit: this.pageSize }).then(res => {
+      getList({
+        classId,
+        page: this.curPage,
+        limit: this.pageSize,
+        showNobody: this.showNobody
+      }).then(res => {
         console.log('RES', res)
         this.tableData = res.data.list
         this.total = res.data.total
