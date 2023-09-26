@@ -1,12 +1,9 @@
 import request from '@/utils/request'
 
-// 代理域名配置
-const path = process.env.NODE_ENV === 'development' ? 'single' : ''
-
 // 获取活动列表
 export function getAct(params) {
   return request({
-    url: `${path}/activity`,
+    url: `/activity`,
     method: 'get',
     params
   })
@@ -15,7 +12,7 @@ export function getAct(params) {
 // 删除活动
 export function deleteAct(params) {
   return request({
-    url: `${path}/activity/${params.id}`,
+    url: `/activity/${params.id}`,
     method: 'delete'
   })
 }
@@ -23,7 +20,7 @@ export function deleteAct(params) {
 // 创建活动
 export function createAct(params) {
   return request({
-    url: `${path}/activity`,
+    url: `/activity`,
     method: 'post',
     data: params
   })
@@ -31,7 +28,7 @@ export function createAct(params) {
 
 export function getList(params) {
   return request({
-    url: `${path}/api/admin/userList`,
+    url: `/api/admin/userList`,
     method: 'get',
     params
   })
@@ -39,7 +36,7 @@ export function getList(params) {
 
 export function updateUserInfo(id, params) {
   return request({
-    url: `${path}/api/admin/user/info`,
+    url: `/api/admin/user/info`,
     method: 'put',
     data: params,
     params: { id }

@@ -36,17 +36,17 @@ module.exports = {
     overlay: {
       warnings: false,
       errors: true
-    },
-    proxy: {
-      '/single': {
-        target: process.env.VUE_APP_API_BASE_URL,
-        changeOrigin: true, // 允许跨域
-        pathRewrite: {
-          // 重写路径，替换请求地址中的指定路径
-          '^/single': '/' // 将请求地址中的/api替换为空，也就是请求地址中不会包含/api/
-        }
-      }
     }
+    // proxy: {
+    // '/api': {
+    //   target: process.env.VUE_APP_API_BASE_URL,
+    //   changeOrigin: true, // 允许跨域
+    //   pathRewrite: {
+    //     // 重写路径，替换请求地址中的指定路径
+    //     // '^/single': '/' // 将请求地址中的/api替换为空，也就是请求地址中不会包含/api/
+    //   }
+    // }
+    // }
   //   proxy: {
   //     "/single": {
   //         // 代理名称   凡是使用/api开头的地址都是用此代理
