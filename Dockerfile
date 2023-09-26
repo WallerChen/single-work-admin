@@ -7,15 +7,7 @@ WORKDIR /app
 
 RUN yarn && yarn build:prod
 
-# service
-FROM node:16-alpine
 
-# COPY /services /app
-COPY --from=builder /app/dist /app/app/public
 
-WORKDIR /app
-RUN yarn
-
-EXPOSE 7001
-
-CMD ["yarn", "start"]
+FROM nginx:alpine
+COPY --from=builder /app/dist  /usr/share/nginx/html
