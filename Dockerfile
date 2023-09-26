@@ -7,5 +7,14 @@ WORKDIR /app
 
 RUN yarn && yarn build:prod
 
-EXPOSE 8080
+# service
+FROM node:16-alpine
+
+COPY --from=builder /app/dist /app/public
+
+WORKDIR /app
+RUN yarn
+
+EXPOSE $PORT
+
 CMD ["yarn", "start"]
