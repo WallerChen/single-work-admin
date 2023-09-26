@@ -10,7 +10,7 @@ RUN yarn && yarn build:prod
 # service
 FROM node:16-alpine
 
-COPY /services /app
+# COPY /services /app
 COPY --from=builder /app/dist /app/app/public
 
 WORKDIR /app
