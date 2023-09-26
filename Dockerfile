@@ -8,4 +8,4 @@ WORKDIR /app
 RUN yarn && yarn build:prod
 
 EXPOSE 8080
-RUN yarn start
+CMD ["yarn", "start"]
