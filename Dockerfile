@@ -10,11 +10,11 @@ RUN yarn && yarn build:prod
 # service
 FROM node:16-alpine
 
-COPY --from=builder /app/dist /app/public
+COPY --from=builder /app/dist /app/dist
 
 WORKDIR /app
 RUN yarn
 
 EXPOSE $PORT
 
-CMD ["yarn", "start"]
+CMD ["npx", "http-server", "-P", "http://127.0.0.1:${PORT}", "./dist"]
