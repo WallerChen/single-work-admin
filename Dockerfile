@@ -7,14 +7,7 @@ WORKDIR /app
 
 RUN yarn && yarn build:prod
 
-# service
-FROM node:16-alpine
 
-COPY --from=builder /app/dist /app/dist
 
-WORKDIR /app
-RUN yarn
-
-EXPOSE $PORT
-
-CMD ["npx", "http-server", "-P", "http://127.0.0.1:${PORT}", "./dist"]
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
