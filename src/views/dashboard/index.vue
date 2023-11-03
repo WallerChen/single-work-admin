@@ -1,16 +1,14 @@
 <template>
   <div class="dashboard-container">
     <el-row style="margin-bottom: 2rem;">
-      <el-button size="mini" @click="getInfoByClass('one')">一班</el-button>
-      <el-button size="mini" @click="getInfoByClass('two')">二班</el-button>
-      <el-button size="mini" @click="getInfoByClass('three')">三班</el-button>
-      <el-button size="mini" @click="getInfoByClass('four')">四班</el-button>
+
+      <el-button v-for="(item,k) in classList" :key="k" size="mini" @click="getInfoByClass(item.value)">{{ item.name }}</el-button>
 
       <el-input v-model="searchName" placeholder="请输入昵称" size="mini" class="search">
         <el-button slot="append" icon="el-icon-search" @click="onSearchName()" />
       </el-input>
 
-      <el-switch v-model="showNobody" active-text="显示三无人员" @change="onToggleShowNobody" />
+      <el-switch v-model="showNobody" style="margin-left: 2rem;" active-text="显示三无人员" @change="onToggleShowNobody" />
     </el-row>
 
     <el-table :data="tableData" size="mini" style="width: 100%" border>
@@ -96,6 +94,13 @@ export default {
   name: 'Dashboard',
   data() {
     return {
+      classList: [
+        { name: '一班', value: 'one' },
+        { name: '二班', value: 'two' },
+        { name: '三班', value: 'three' },
+        { name: '四班', value: 'four' },
+        { name: '五班', value: 'five' }
+      ],
       tableData: [],
       searchName: '',
       select: '',
