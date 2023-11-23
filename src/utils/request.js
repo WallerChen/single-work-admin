@@ -3,9 +3,20 @@ import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
+export const BACKEND_LIST = [{
+  label: '线上',
+  value: 'https://go-backend-17832-5-1312859283.sh.run.tcloudbase.com'
+}, {
+  label: '团队测试(test)',
+  value: 'https://go-backend-test-17832-5-1312859283.sh.run.tcloudbase.com'
+}, {
+  label: '开发者测试(localhost)',
+  value: 'http://127.0.0.1:8080'
+}]
+
 // create an axios instance
 const service = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL,
+  // baseURL: process.env.VUE_APP_API_BASE_URL,
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: 5000 // request timeout
 })
@@ -14,6 +25,10 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     // do something before request is sent
+
+    const serverUrl = localStorage.getItem('serverUrl')
+    console.log('serverUrl', serverUrl)
+    config.baseURL = serverUrl
 
     if (store.getters.token) {
       // let each request carry token
@@ -25,7 +40,7 @@ service.interceptors.request.use(
   },
   error => {
     // do something with request error
-    console.log(error) // for debug
+    console.log('request err', error) // for debug
     return Promise.reject(error)
   }
 )

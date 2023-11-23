@@ -5,6 +5,7 @@
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
+      <span class="server-status">服务器：{{ server }}</span>
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
@@ -30,6 +31,7 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
+import { BACKEND_LIST } from '@/utils/request'
 
 export default {
   components: {
@@ -40,7 +42,16 @@ export default {
     ...mapGetters([
       'sidebar',
       'avatar'
-    ])
+    ]),
+    server() {
+      const serverUrl = localStorage.getItem('serverUrl')
+      const name = BACKEND_LIST.find(item => {
+        return item.value === serverUrl
+      })
+
+      return name.label
+    }
+
   },
   methods: {
     toggleSideBar() {
@@ -79,11 +90,16 @@ export default {
     float: left;
   }
 
+  .server-status{
+    padding-right: 1rem;
+  }
+
   .right-menu {
     float: right;
     height: 100%;
     line-height: 50px;
 
+    display: flex;
     &:focus {
       outline: none;
     }

@@ -41,6 +41,17 @@
         </span>
       </el-form-item>
 
+      <el-form-item class="server-list" label="后端服务器">
+        <el-select v-model="backendServer" class="server-select" placeholder="please select your zone" @change="onServerSelected">
+          <el-option
+            v-for="item in backendList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
+
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
 
     </el-form>
@@ -49,6 +60,7 @@
 
 <script>
 import { validUsername } from '@/utils/validate'
+import { BACKEND_LIST } from '@/utils/request'
 
 export default {
   name: 'Login',
@@ -68,6 +80,8 @@ export default {
       // }
     }
     return {
+      backendList: BACKEND_LIST,
+      backendServer: BACKEND_LIST[0].value,
       loginForm: {
         username: '',
         password: ''
@@ -89,7 +103,16 @@ export default {
       immediate: true
     }
   },
+  mounted() {
+    this.backendServer = localStorage.getItem('serverUrl') || BACKEND_LIST[0].value
+    localStorage.setItem('serverUrl', this.backendServer)
+  },
   methods: {
+
+    onServerSelected() {
+      console.log('server selected', this.backendServer)
+      localStorage.setItem('serverUrl', this.backendServer)
+    },
     showPwd() {
       if (this.passwordType === 'password') {
         this.passwordType = ''
@@ -124,8 +147,8 @@ export default {
 /* 修复input 背景不协调 和光标变色 */
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
-$bg:#283443;
-$light_gray:#fff;
+$bg: #283443;
+$light_gray: #fff;
 $cursor: #fff;
 
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
@@ -168,9 +191,9 @@ $cursor: #fff;
 </style>
 
 <style lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
+$bg: #2d3a4b;
+$dark_gray: #889aa4;
+$light_gray: #eee;
 
 .login-container {
   min-height: 100%;
@@ -228,5 +251,19 @@ $light_gray:#eee;
     cursor: pointer;
     user-select: none;
   }
+}
+
+.server-select {
+  // width: fit-content;
+}
+
+.server-list.el-form-item {
+  padding-left: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+::v-deep .server-list .el-input{
+  width: 21rem;
 }
 </style>
