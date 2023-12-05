@@ -108,9 +108,9 @@ export default {
       }
 
       getActivityList(query).then(res => {
-        console.log('res', res)
-        this.tableData = res.rows
-        this.total = res.total
+        console.log('getActivityList res', res)
+        this.tableData = res.data.list
+        this.total = res.data.total
         this.listLoading = false
       })
       this.tableData = []

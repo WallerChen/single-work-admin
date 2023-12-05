@@ -1,7 +1,7 @@
 <template>
   <div class="main">
 
-    <h1 v-if="mode=='update'">编辑活动</h1>
+    <h1 v-if="mode == 'edit'">编辑活动</h1>
     <h1 v-else>创建活动</h1>
 
     <div>
@@ -76,7 +76,16 @@
     <h3>文案编辑：</h3>
     <div class="editor-area">
       <!-- tinymce-script-src -->
-      <Editor id="editor" v-model="content" :init="tinymceInit" />
+      <Editor
+        id="editor"
+        v-model="content"
+        :init="tinymceInit"
+
+        api-key="7q9jf03l3uzkjxf2mehm98tyygk2chohslgwsbepnh5xfe76"
+        @onBeforeSetContent="beforeSetContent"
+        @onSetContent="onSetContent"
+        @onSelectionChange="onSelectionChange"
+      />
     </div>
 
     <Position :maker-position.sync="position" :dialog-visible.sync="showMap" @confirm="onMapConfirm" />
@@ -88,7 +97,8 @@
 import Editor from '@tinymce/tinymce-vue'
 import Position from '@/components/Position'
 
-import { createActivity, updateActivity, getActivity } from '@/api/activity'
+import { createActivity, updateActivity, getActivity, tinyMceUploadImg, upload } from '@/api/activity'
+import { Message } from 'element-ui'
 
 export default {
   name: 'ActivityDetail',
@@ -103,18 +113,37 @@ export default {
       mode: 'create', // create, edit
       content: '',
       coverImg: '',
+      editor: null,
       tinymceInit: {
+        apiKey: '7q9jf03l3uzkjxf2mehm98tyygk2chohslgwsbepnh5xfe76',
         height: 600,
+        // width: (750 - 40) / 2,
         language: 'zh_CN',
-        plugins: 'lists link image table help wordcount paste',
-        toolbar: 'undo redo | formatselect | image bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat',
-        images_upload_url: '/go/api/admin/editor/upload',
-        images_upload_base_path: 'http://localhost:8100/',
+        plugins: 'lists link image help wordcount paste',
+        toolbar: 'undo redo | formatselect | image bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | addSmallImg addBigImg',
+
         images_file_types: 'jpeg,jpg,png,gif,webp',
         automatic_uploads: true,
         paste_data_images: true,
-        content_style: 'img {max-width:100%;}', // 限制最大图片宽度
-        images_upload_max_filesize: '2m'// 限制图片文件大小
+        body_style: 'margin: 0',
+        content_style: 'body {width: calc(375px + 2px); margin: 0; padding: 15px; border: 1px dashed red; box-sizing: border-box;} ', // border-box 有左右1个px
+        // 'p {padding-left: 15px; padding-right: 15px; box-sizing: border-box;}',
+
+        // content_style: 'img { object-fit: cover; max-width:30%; max-height:30%; margin: 10px; border: 5px solid red; padding: 3px; }',
+        // inline_styles: false,
+        // content_style: '.small-img { object-fit: cover; max-width:100px; max-height:100px; margin: 10px; border: 5px dashed red; padding: 3px; }',
+
+        images_upload_max_filesize: '2m', // 限制图片文件大小
+        images_upload_handler: function(blobInfo, success, failure, progress) {
+          tinyMceUploadImg(blobInfo, success, failure, progress)
+        },
+        setup: (editor) => {
+          this.editor = editor
+
+          editor.ui.registry.addButton('addSmallImg', this.addImgButtonCfg('small'))
+          editor.ui.registry.addButton('addBigImg', this.addImgButtonCfg('big'))
+        }
+
       },
       activityForm: {
         title: '',
@@ -133,19 +162,123 @@ export default {
     this.mode = this.$route.query.mode
     this.id = this.$route.query.id
 
-    console.log('mode', this.mode)
-    console.log('id', this.id)
-
     if (this.mode === 'edit') {
       // get activity detail
       const res = await getActivity(this.id)
-      console.log('res', res)
-      res.timeRange = [new Date(res.timeStart), new Date(res.timeEnd)]
-      this.activityForm = res
-      this.content = res.content
+      console.log('getActivity res', res)
+      const activity = res.data
+      activity.timeRange = [new Date(activity.timeStart), new Date(activity.timeEnd)]
+      activity.price = activity.price / 100
+      this.activityForm = activity
+      this.content = activity.content
     }
   },
   methods: {
+    onInsertImg(imgType) {
+      const input = document.createElement('input')
+      input.value = '选择文件'
+      input.type = 'file'
+      input.onchange = event => {
+        const file = event.target.files[0]
+        const blobInfo = {
+          blob: () => {
+            return file
+          }
+        }
+        const failure = (err) => {
+          console.log('upload error', err)
+        }
+        const success = (res) => {
+          console.log('upload success', res)
+          let imgClass = 'small-img'
+          if (imgType === 'big') {
+            imgClass = 'big-img'
+          }
+
+          this.editor.insertContent(`<img class="${imgClass}" src="${res}">`)
+        }
+
+        tinyMceUploadImg(blobInfo, success, failure, null)
+      }
+      input.click()
+    },
+    onSelectionChange() {
+    },
+    addImgButtonCfg(imgType) {
+      // imgType    small, big
+      // actionType add, set
+
+      let imgTxt = '小图'
+      const actionTxt = '插入/设置'
+      let imgClass = `small-img`
+      if (imgType === 'big') {
+        imgTxt = '大图'
+        imgClass = `big-img`
+      }
+
+      return {
+        text: `<span>${actionTxt}${imgTxt}</span>`,
+        onAction: (e) => {
+          const node = this.editor.selection.getNode()
+          console.log('nodeName', node.nodeName)
+          if (node.nodeName === 'IMG') {
+            this.editor.dom.removeClass(node, 'small-img')
+            this.editor.dom.removeClass(node, 'big-img')
+            this.editor.dom.addClass(node, imgClass)
+            this.onSetContent(null)
+          } else {
+            // 插入
+            this.onInsertImg(imgType)
+          }
+        }
+      }
+    },
+    onSetContent(params) {
+    // 内容变更后进行样式设置
+      let nodes = this.editor.getBody().getElementsByClassName('small-img')
+
+      for (const node of nodes) {
+        const nodeIndex = this.editor.dom.nodeIndex(node)
+        console.log('nodeIndex', nodeIndex, node)
+        let marginLeft = '15px'
+        if (nodeIndex % 3 === 0) {
+          marginLeft = '0'// 左边第一个元素不需要margin
+        }
+
+        this.editor.dom.setStyles(node, {
+          'width': '105px',
+          'height': '105px',
+          'object-fit': 'cover',
+          'border-radius': '10px',
+          'margin': '0',
+          'margin-left': marginLeft,
+          'margin-top': '15px',
+          // 'border-radius': '0',
+          // 'border': '2px solid green',
+          // 'box-sizing': 'border-box',
+          'border': null
+        })
+      }
+
+      nodes = this.editor.getBody().getElementsByClassName('big-img')
+      for (const node of nodes) {
+        this.editor.dom.setStyles(node, {
+          'width': '345px',
+          'height': 'auto',
+          'object-fit': null,
+          'border-radius': '10px',
+          'margin': '0',
+          // 'margin-left': '15px',
+          // 'box-sizing': 'border-box'
+          // 'border-radius': '0',
+          // 'border': '2px solid green',
+          'border': null
+        })
+      }
+    },
+    beforeSetContent(params) {
+      // console.log('beforeSetContent', params)
+    },
     formatPrice() {
       this.activityForm.price = this.activityForm.price.replace(/[^\d\.]/g, '')
       // 如果小数点后面有3位及以上的数字，则截取前两位
@@ -165,14 +298,10 @@ export default {
       const yuan = parseFloat(value)
       return yuan.toFixed(2)
     },
-    onCoverChange() {
+    async onCoverChange() {
       const img = this.$refs.upload_cover.uploadFiles[0].raw
-      // convert to base64 data URL
-      const reader = new FileReader()
-      reader.readAsDataURL(img)
-      reader.onload = () => {
-        this.coverImg = reader.result
-      }
+      const res = await upload(img, 'activity/cover')
+      this.coverImg = res.data.url
     },
     onMapConfirm(e) {
       console.log('onMapConfirm', e)
@@ -185,21 +314,24 @@ export default {
     onPublish() {
       console.log(this.content)
     },
-    onSave() {
+    async onSave() {
       const form = JSON.parse(JSON.stringify(this.activityForm))
       form.price = form.price * 100
       form.content = this.content
       form.timeStart = new Date(form.timeRange[0]).valueOf()
       form.timeEnd = new Date(form.timeRange[1]).valueOf()
+      form.coverImg = this.coverImg
 
       if (this.mode === 'edit') {
-        updateActivity(this.id, form).then(res => {
-          console.log('update res', res)
-        })
+        const res = await updateActivity(this.id, form)
+        console.log('update res', res)
+
+        Message.success('更新成功')
       } else {
-        createActivity(form).then(res => {
-          console.log('create res', res)
-        })
+        const res = await createActivity(form)
+        console.log('create res', res)
+
+        Message.success('创建成功')
       }
     }
   }
@@ -213,6 +345,7 @@ export default {
 
 .editor-area {
   border: 1px solid gray;
+  // width: calc(375px - 20px);
 }
 
 .btn-group {

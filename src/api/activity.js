@@ -35,3 +35,39 @@ export function updateActivity(id, data) {
     data
   })
 }
+
+export async function tinyMceUploadImg(blobInfo, success, failure, progress) {
+  const formdata = new FormData()
+  formdata.append('file', blobInfo.blob())
+  formdata.append('saveDir', 'activity/editor')
+  formdata.append('compressImg', '1')
+
+  try {
+    const res = await request({
+      url: '/api/admin/upload',
+      method: 'POST',
+      data: formdata,
+
+      onUploadProgress: progress
+    })
+
+    success(res.data.url)
+  } catch (error) {
+    failure(error)
+  }
+}
+
+export async function upload(file, saveDir, compressImg = true) {
+  const formdata = new FormData()
+
+  formdata.append('file', file)
+  formdata.append('saveDir', saveDir)
+  formdata.append('compressImg', compressImg ? '1' : '0')
+
+  return await request({
+    url: '/api/admin/upload',
+    method: 'POST',
+    data: formdata
+  })
+}
+

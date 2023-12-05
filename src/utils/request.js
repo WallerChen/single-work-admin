@@ -11,7 +11,7 @@ export const BACKEND_LIST = [{
   value: 'https://go-backend-test-17832-5-1312859283.sh.run.tcloudbase.com'
 }, {
   label: '开发者测试(localhost)',
-  value: 'http://127.0.0.1:8080'
+  value: 'http://127.0.0.1:8100'
 }]
 
 // create an axios instance
