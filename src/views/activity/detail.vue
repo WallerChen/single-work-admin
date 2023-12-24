@@ -7,8 +7,9 @@
     <div>
       <!-- 当前活动状态 -->
       <div class="btn-group">
-        <el-button size="small" type="primary" @click="onPublish">发布</el-button>
-        <el-button size="small" type="warning" @click="onSave">保存草稿</el-button>
+        <el-button size="small" type="primary" @click="onSave">保存/发布</el-button>
+        <!-- <el-button size="small" type="primary" @click="onPublish">发布</el-button> -->
+        <!-- <el-button size="small" type="warning" @click="onSave">保存草稿</el-button> -->
       </div>
     </div>
 
@@ -74,7 +75,21 @@
     </div>
 
     <h3>文案编辑：</h3>
-    <div class="editor-area">
+    <div>
+      <div>现在使用群接龙工具来创建活动，请扫这个码创建活动，并按照步骤把复制一下这些东西到这个地方：</div>
+
+      <div class="input-row">
+        <span>群接龙小程序路径：</span>
+        <el-input v-model="qjlPath" />
+      </div>
+
+      <h4>操作教程:</h4>
+      <div class="qjl-hint">
+        <el-image v-for="item in qjlHintList" :key="item" style="width: 10rem;" :src="item" :preview-src-list="qjlHintList" />
+      </div>
+
+    </div>
+    <div class="editor-area" hidden>
       <!-- tinymce-script-src -->
       <Editor
         id="editor"
@@ -113,6 +128,7 @@ export default {
       mode: 'create', // create, edit
       content: '',
       coverImg: '',
+      qjlPath: '',
       editor: null,
       tinymceInit: {
         apiKey: '7q9jf03l3uzkjxf2mehm98tyygk2chohslgwsbepnh5xfe76',
@@ -154,7 +170,12 @@ export default {
         organizer: '',
         location: '',
         geoLoc: ''
-      }
+      },
+      qjlHintList: [
+        require('@/assets/activity/qjl-1.jpg'),
+        require('@/assets/activity/qjl-2.jpg'),
+        require('@/assets/activity/qjl-3.jpg')
+      ]
     }
   },
   async created() {
@@ -171,6 +192,7 @@ export default {
       activity.price = activity.price / 100
       this.activityForm = activity
       this.content = activity.content
+      this.qjlPath = activity.qjlPath
     }
   },
   methods: {
@@ -234,7 +256,7 @@ export default {
       }
     },
     onSetContent(params) {
-    // 内容变更后进行样式设置
+      // 内容变更后进行样式设置
       let nodes = this.editor.getBody().getElementsByClassName('small-img')
 
       for (const node of nodes) {
@@ -321,6 +343,7 @@ export default {
       form.timeStart = new Date(form.timeRange[0]).valueOf()
       form.timeEnd = new Date(form.timeRange[1]).valueOf()
       form.coverImg = this.coverImg
+      form.qjlPath = this.qjlPath.trim()
 
       if (this.mode === 'edit') {
         const res = await updateActivity(this.id, form)
@@ -366,4 +389,21 @@ export default {
   border: 1px dashed gray;
 }
 
+.input-row {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+
+  span {
+    flex-shrink: 0;
+    font-weight: bold;
+  }
+}
+
+.qjl-hint {
+  .el-image {
+    margin: 1rem;
+  }
+}
 </style>
