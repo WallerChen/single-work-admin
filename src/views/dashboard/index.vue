@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     <el-row style="margin-bottom: 2rem;">
 
-      <el-button v-for="(item,k) in classList" :key="k" size="mini" @click="getInfoByClass(item.value)">{{ item.name }}</el-button>
+      <el-button v-for="(item,k) in classList" :key="k" :type="classId==item.value?'primary':'default'" size="mini" @click="getInfoByClass(item.value)">{{ item.name }}</el-button>
 
       <el-input v-model="searchName" placeholder="请输入昵称" size="mini" class="search">
         <el-button slot="append" icon="el-icon-search" @click="onSearchName()" />
@@ -13,7 +13,7 @@
 
     <el-table :data="tableData" size="mini" style="width: 100%" border>
       <el-table-column prop="id" label="#" />
-      <el-table-column prop="classId" label="班级" width="100" />
+      <el-table-column prop="class_id" label="班级" width="100" />
       <el-table-column label="用户头像" width="150">
         <template slot-scope="scope">
           <img v-if="scope.row.avatarUrl" :src="scope.row.avatarUrl" class="picture">
@@ -195,6 +195,7 @@ export default {
       }
     },
     getInfoByClass(classId) {
+      this.classId = classId
       getList({
         classId,
         page: this.curPage,
