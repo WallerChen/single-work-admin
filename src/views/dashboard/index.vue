@@ -115,7 +115,7 @@ export default {
       ],
       tableData: [],
       searchName: '',
-      orderBy: '',
+      order: '',
       select: '',
       updateObj: {},
       isEdit: false,
@@ -139,30 +139,36 @@ export default {
     async onSortChange({ column, prop, order }) {
       console.log('onSortChange', column, prop, order)
 
+      let orderField = ''
       switch (column.label) {
         case '创建时间':
-          this.orderBy = 'created_at'
+          orderField = 'created_at'
           break
         case '更新时间':
-          this.orderBy = 'updated_at'
+          orderField = 'updated_at'
           break
         case '用户质量分':
-          this.orderBy = 'score'
+          orderField = 'score'
           break
         case '用户介绍':
-          this.orderBy = 'desc'
+          orderField = '`desc`'
           break
         case '是否展示':
-          this.orderBy = 'is_show'
+          orderField = 'is_show'
           break
         default:
-          this.orderBy = 'id'
+          orderField = ''
       }
 
-      if (order === 'descending') {
-        this.orderBy = '-' + this.orderBy
+      if (!orderField) {
+        // 默认ID排序
+        this.order = 'id'
       } else {
-        this.orderBy = '+' + this.orderBy
+        if (order === 'descending') {
+          this.order = `${orderField} desc,id`
+        } else {
+          this.order = `${orderField} asc,id`
+        }
       }
 
       await this.getInfoByClass(this.classId)
@@ -250,7 +256,7 @@ export default {
         limit: this.pageSize,
         showNobody: this.showNobody,
         searchName: this.searchName,
-        orderBy: this.orderBy
+        order: this.order
       }).then(res => {
         console.log('RES', res)
         this.tableData = res.data.list
