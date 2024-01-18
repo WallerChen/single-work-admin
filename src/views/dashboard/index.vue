@@ -2,7 +2,8 @@
   <div class="dashboard-container">
     <el-row style="margin-bottom: 2rem;">
 
-      <el-button v-for="(item,k) in classList" :key="k" :type="classId==item.value?'primary':'default'" size="mini" @click="getInfoByClass(item.value)">{{ item.name }}</el-button>
+      <el-button v-for="(item, k) in classList" :key="k" :type="classId == item.value ? 'primary' : 'default'" size="mini" @click="getInfoByClass(item.value)">{{
+        item.name }}</el-button>
 
       <el-input v-model="searchName" placeholder="请输入昵称" size="mini" class="search">
         <el-button slot="append" icon="el-icon-search" @click="onSearchName()" />
@@ -11,7 +12,7 @@
       <el-switch v-model="showNobody" style="margin-left: 2rem;" active-text="显示三无人员" @change="onToggleShowNobody" />
     </el-row>
 
-    <el-table :data="tableData" size="mini" style="width: 100%" border>
+    <el-table v-loading="loading" :data="tableData" size="mini" style="width: 100%" border @sort-change="onSortChange">
       <el-table-column prop="id" label="#" />
       <el-table-column prop="class_id" label="班级" width="100" />
       <el-table-column label="用户头像" width="150">
@@ -49,19 +50,22 @@
           </el-select>
         </template>
       </el-table-column>
-      <!-- <el-table-column prop="desc" label="强制排序" sortable width="100">
-        <template slot-scope="scope">
-          <div v-if="!scope.row.edit">{{ scope.row.rank }}</div>
-          <el-input v-else v-model="scope.row.rank" placeholder="请输入排序" />
-        </template>
-      </el-table-column> -->
       <el-table-column label="是否展示" sortable width="120">
         <template slot-scope="scope">
           <el-switch v-model="scope.row.isShow" @change="onUpdateUserShow(scope.row)" />
         </template>
       </el-table-column>
-      <el-table-column prop="created_at" label="创建时间" />
-      <el-table-column prop="updated_at" label="更新时间" />
+      <el-table-column sortable label="创建时间">
+        <template slot-scope="scope">
+          {{ scope.row.createdAt | formatDate('YYYY-MM-DD HH:mm:ss') }}
+        </template>
+      </el-table-column>
+
+      <el-table-column sortable label="更新时间">
+        <template slot-scope="scope">
+          {{ scope.row.updatedAt | formatDate('YYYY-MM-DD HH:mm:ss') }}
+        </template>
+      </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button
@@ -89,9 +93,17 @@
 import { mapGetters } from 'vuex'
 import { Message } from 'element-ui'
 import { getList, updateUserInfo } from '../../api/group'
+import moment from 'moment'
 
 export default {
   name: 'Dashboard',
+
+  filters: {
+    formatDate(time, format) {
+      if (!time) return ''
+      return moment(time).format(format)
+    }
+  },
   data() {
     return {
       classList: [
@@ -103,6 +115,7 @@ export default {
       ],
       tableData: [],
       searchName: '',
+      orderBy: '',
       select: '',
       updateObj: {},
       isEdit: false,
@@ -110,7 +123,8 @@ export default {
       pageSize: 20,
       curPage: 1,
       classId: 'one',
-      showNobody: true
+      showNobody: true,
+      loading: false
     }
   },
   computed: {
@@ -122,6 +136,37 @@ export default {
     this.getInfoByClass(this.classId)
   },
   methods: {
+    async onSortChange({ column, prop, order }) {
+      console.log('onSortChange', column, prop, order)
+
+      switch (column.label) {
+        case '创建时间':
+          this.orderBy = 'created_at'
+          break
+        case '更新时间':
+          this.orderBy = 'updated_at'
+          break
+        case '用户质量分':
+          this.orderBy = 'score'
+          break
+        case '用户介绍':
+          this.orderBy = 'desc'
+          break
+        case '是否展示':
+          this.orderBy = 'is_show'
+          break
+        default:
+          this.orderBy = 'id'
+      }
+
+      if (order === 'descending') {
+        this.orderBy = '-' + this.orderBy
+      } else {
+        this.orderBy = '+' + this.orderBy
+      }
+
+      await this.getInfoByClass(this.classId)
+    },
     onSearchName() {
       this.curPage = 1
       this.classId = ''
@@ -196,16 +241,22 @@ export default {
     },
     getInfoByClass(classId) {
       this.classId = classId
+
+      this.loading = true
+
       getList({
         classId,
         page: this.curPage,
         limit: this.pageSize,
         showNobody: this.showNobody,
-        searchName: this.searchName
+        searchName: this.searchName,
+        orderBy: this.orderBy
       }).then(res => {
         console.log('RES', res)
         this.tableData = res.data.list
         this.total = res.data.total
+      }).finally(() => {
+        this.loading = false
       })
     },
     getInfoByNickName() {
