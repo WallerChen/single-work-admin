@@ -2,8 +2,8 @@
   <div class="dashboard-container">
     <el-row style="margin-bottom: 2rem;">
 
-      <el-button v-for="(item, k) in classList" :key="k" :type="classId == item.value ? 'primary' : 'default'" size="mini" @click="getInfoByClass(item.value)">{{
-        item.name }}</el-button>
+      <el-button v-for="(item, k) in classList" :key="k" :type="classId == item.value ? 'primary' : 'default'" size="mini" @click="getInfoByClass(item.value)">
+        {{ item.name }}</el-button>
 
       <el-input v-model="searchName" placeholder="请输入昵称" size="mini" class="search">
         <el-button slot="append" icon="el-icon-search" @click="onSearchName()" />
@@ -14,7 +14,21 @@
 
     <el-table v-loading="loading" :data="tableData" size="mini" style="width: 100%" border @sort-change="onSortChange">
       <el-table-column prop="id" label="#" />
-      <el-table-column prop="class_id" label="班级" width="100" />
+
+      <el-table-column label="班级" width="100">
+        <template slot-scope="scope">
+          <div v-if="!scope.row.edit">{{ getClassName(scope.row.class_id) }}</div>
+          <el-select v-else v-model="tmpEditList[scope.row.id].class_id" size="mini" placeholder="请选择班级">
+            <el-option
+              v-for="(item, k) in classList"
+              :key="k"
+              :label="item.name"
+              :value="item.value"
+            />
+          </el-select>
+        </template>
+      </el-table-column>
+
       <el-table-column label="用户头像" width="150">
         <template slot-scope="scope">
           <img v-if="scope.row.avatarUrl" :src="scope.row.avatarUrl" class="picture">
@@ -35,7 +49,7 @@
       <el-table-column prop="desc" label="用户介绍" sortable width="250">
         <template slot-scope="scope">
           <div v-if="!scope.row.edit" class="desc-show">{{ scope.row.desc }}</div>
-          <el-input v-else v-model="scope.row.desc" type="textarea" />
+          <el-input v-else v-model="tmpEditList[scope.row.id].desc" type="textarea" />
         </template>
       </el-table-column>
       <el-table-column prop="score" label="用户质量分" sortable width="120">
@@ -66,12 +80,15 @@
           {{ scope.row.updatedAt | formatDate('YYYY-MM-DD HH:mm:ss') }}
         </template>
       </el-table-column>
-      <el-table-column label="操作">
+      <el-table-column label="操作" width="160">
         <template slot-scope="scope">
           <el-button
             size="mini"
+            :type="scope.row.edit?'primary':''"
             @click="handleEdit(scope.$index, scope.row)"
           >{{ scope.row.edit ? '完成' : '编辑' }} </el-button>
+
+          <el-button v-if="scope.row.edit" size="mini" type="danger" @click="handleCancelEdit(scope.$index, scope.row)">取消</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -91,7 +108,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { Message } from 'element-ui'
+// import { Message } from 'element-ui'
 import { getList, updateUserInfo } from '../../api/group'
 import moment from 'moment'
 
@@ -117,8 +134,8 @@ export default {
       searchName: '',
       order: '',
       select: '',
-      updateObj: {},
       isEdit: false,
+      tmpEditList: {}, // key by id
       total: 0,
       pageSize: 20,
       curPage: 1,
@@ -136,6 +153,10 @@ export default {
     this.getInfoByClass(this.classId)
   },
   methods: {
+    getClassName(classId) {
+      const classItem = this.classList.find(item => item.value === classId)
+      return classItem ? classItem.name : '未知班级:' + classId
+    },
     async onSortChange({ column, prop, order }) {
       console.log('onSortChange', column, prop, order)
 
@@ -217,32 +238,27 @@ export default {
       }
     },
     // 编辑用户信息
+    async handleCancelEdit(index, row) {
+      this.$set(this.tableData, index, { ...row, edit: false })
+    },
     async handleEdit(index, row) {
-      if (this.isEdit && !row.edit) {
-        Message({
-          message: '一次性只能编辑一个用户',
-          type: 'error',
-          duration: 3 * 1000
-        })
-        return
-      }
-      this.updateObj = row
-      if (this.isEdit) {
-        const { desc, rank } = this.updateObj
+      if (row.edit === true) {
+        // 保存
+        const { class_id, desc } = this.tmpEditList[row.id]
 
         try {
-          await updateUserInfo(row.id, { desc, rank })
+          await updateUserInfo(row.id, { desc, class_id })
           this.$message.success('更新成功')
         } catch (error) {
           this.$message.error('失败：' + error)
         }
 
-        this.isEdit = false
-        this.$set(this.tableData, index, { ...row, ...this.updateObj, edit: false })
+        const updateObj = { class_id, desc }
+        this.$set(this.tableData, index, { ...row, ...updateObj, edit: false })
       } else {
-        row.edit = true
-        this.isEdit = true
-        this.$set(this.tableData, index, row)
+        // 编辑
+        this.$set(this.tableData, index, { ...row, edit: true })
+        this.$set(this.tmpEditList, row.id, JSON.parse(JSON.stringify(row)))
       }
     },
     getInfoByClass(classId) {
